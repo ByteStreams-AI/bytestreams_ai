@@ -99,3 +99,67 @@ Implemented arrow separators (`->`) between row links and kept row labels aligne
 - `README.md`
 - `AGENTS.md` *(this file)*
 - `github/ISSUES/copy-updates-footer-navigation.md` *(new)*
+
+---
+
+## 2026-04-29 — `main`
+
+**Agent:** Oz (Warp)
+
+Reconstructed from git history (commits `23fed94`, `82a52af`, `7fa8daf`) since
+no session notes were captured at the time of the changes.
+
+### Changes Made
+
+#### Contact phone number (`23fed94`)
+Updated the public contact phone number across the site from
+`+1 629-282-9555` to `+1 629-250-1143`. Both the displayed text and the
+`tel:` href were updated to keep them in sync.
+
+- `index.html` — footer / contact phone
+- `sms-terms.html` — SMS terms contact references
+- `terms.html` — multiple occurrences in legal copy
+- `assets/blue-side-slim-semi-logo.png` — new logo asset added alongside
+  the contact change
+
+#### Footer social links populated (`82a52af`)
+Replaced placeholder `href="#"` social icons in the footer with real
+destinations on every public page (`index.html`, `privacy.html`,
+`terms.html`, `cookies.html`, `sms-terms.html`):
+
+- **LinkedIn** → `https://www.linkedin.com/company/`
+- **X / Twitter** → `https://x.com/byte_streams`
+- **GitHub** → `https://github.com/ByteStreams-AI`
+
+#### LinkedIn URL fix (`7fa8daf`)
+Follow-up correction to point the LinkedIn icon at the actual ByteStreams
+company page on all five pages:
+
+- **Before:** `https://www.linkedin.com/company/`
+- **After:** `https://www.linkedin.com/company/bytestreams/`
+
+### Files Modified
+- `index.html`
+- `privacy.html`
+- `terms.html`
+- `cookies.html`
+- `sms-terms.html`
+- `assets/blue-side-slim-semi-logo.png` *(new)*
+
+---
+
+## 2026-04-30 — `docs/agents-log-2026-04-29`
+
+**Agent:** Oz (Warp)
+
+### Changes Made
+
+#### Documentation refresh
+- Backfilled `AGENTS.md` with the 2026-04-29 entry above (phone number,
+  social links, LinkedIn fix) from git history.
+- Updated `README.md` Structure section to include `sms-terms.html` and
+  `404.html` and to note the populated footer social links.
+
+### Files Modified
+- `AGENTS.md` *(this file)*
+- `README.md`

@@ -20,7 +20,10 @@ and the layout in `site/*.png`:
   - Company -> About -> Security
   - Product -> DialTone.menu -> DialTone.med (comming soon) -> Features
   - Legal -> Privacy -> Terms -> Cookie Policy
-- **Legal pages** — Dedicated `privacy.html`, `terms.html`, and `cookies.html`
+  - Social icons link to LinkedIn, X / Twitter, and GitHub
+- **Legal pages** — Dedicated `privacy.html`, `terms.html`, `cookies.html`,
+  and `sms-terms.html`
+- **404** — Branded `404.html` for not-found responses
 
 Dark-mode-first per brand guidelines (§7.1), with an alternate light palette
 already wired up via `body[data-theme="light"]`.
@@ -85,6 +88,8 @@ bytestreams/
 ├── privacy.html
 ├── terms.html
 ├── cookies.html
+├── sms-terms.html
+├── 404.html
 ├── js/main.js
 ├── sass/
 │   ├── abstracts/   # _variables.scss, _mixins.scss (brand tokens)
