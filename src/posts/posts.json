@@ -1,0 +1,6 @@
+{
+  "layout": "post.njk",
+  "tags": "posts",
+  "category": "Insights",
+  "permalink": "/blog/{{ page.fileSlug }}/index.html"
+}

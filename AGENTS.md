@@ -5,6 +5,44 @@ AI agents (Oz / Warp) across branches and sessions.
 
 ---
 
+## SEO Standards & Instructions
+
+These rules apply to all ByteStreams landing pages and product sites. Treat them as prerequisites before any page ships.
+
+### On-Page Checklist — Every HTML Page
+1. **`<title>`** — Include at least one target keyword. Keep under 60 characters. Format: `[Keyword Phrase] | [Brand]` or `[Brand] — [Keyword Phrase]`.
+2. **`<meta name="description">`** — 140–160 characters. Include the primary keyword naturally. This controls the Google search snippet.
+3. **Open Graph** — `og:title`, `og:description`, `og:type`, `og:url`, `og:image` (1200×630 PNG/JPG) must all be present.
+4. **Twitter Card** — `twitter:card` = `summary_large_image`, `twitter:title`, `twitter:description`. Mirror OG values.
+5. **`<link rel="canonical">`** — Every page points to its own canonical full URL. Prevents duplicate-content penalties.
+6. **`<meta name="keywords">`** — 6–10 long-tail comma-separated variants. Refresh when targeting new search terms.
+7. **JSON-LD structured data** — Use `SoftwareApplication`, `Organization`, or appropriate `@type`. Keep in sync with actual product details (pricing, description, contact). Validate at https://search.google.com/test/rich-results.
+
+### Body Copy Rules
+- First `<p>` below the `<h1>` must contain the primary keyword phrase naturally.
+- At least one `<h2>` or `<h3>` on the page should include a keyword or close variant.
+- Use keyword variants in supporting copy — avoid exact repetition.
+
+### Sitemap & Robots — Required Files in `public/`
+- **`sitemap.xml`** — All indexable pages with `<lastmod>`, `<changefreq>`, `<priority>`. Homepage = `1.0`, content pages = `0.8`, legal = `0.3`. Never list `404.html`.
+- **`robots.txt`** — `Sitemap:` must point to the live domain sitemap URL. Block `/admin/` and `/api/`. Block `GPTBot`.
+
+### After Every Deployment
+1. Submit sitemap in Google Search Console → Sitemaps.
+2. Use URL Inspection → Request Indexing for any page with major content changes.
+3. Check Search Console for crawl errors weekly.
+
+### Long-Term Traffic Drivers
+These are ongoing growth actions — not one-time code tasks:
+- **Google Search Console** — Set up domain verification and sitemap submission before first deploy.
+- **Directory listings** — Product Hunt, G2, Capterra, GetApp, Clutch.co. Each is a backlink + independent traffic source.
+- **Backlinks** — Target industry blogs, local business journals, trade publications. One editorial mention outweighs all on-page SEO.
+- **Content marketing** — One blog post/month targeting a long-tail keyword. Add each to `sitemap.xml`. Host at `/blog/[slug].html`.
+- **Social proof / press** — Add media coverage and customer quotes to the homepage. Link back from the source.
+- **Page speed** — Run Lighthouse monthly. Target LCP < 2.5s. Core Web Vitals are ranking signals.
+
+---
+
 ## 2026-04-21 — `chore/copy-updates`
 
 **Agent:** Oz (Warp)

@@ -135,17 +135,36 @@ function handleSecurityTxt() {
 }
 
 function handleSitemap(url) {
-  const pages = [
-    '/',
-    '/privacy.html',
-    '/terms.html',
-    '/sms-terms.html',
-    '/cookies.html'
+  // Static pages: [path, lastmod, changefreq, priority]
+  const staticPages = [
+    ['/',               '2026-05-21', 'weekly',  '1.0'],
+    ['/blog/',          '2026-05-21', 'weekly',  '0.9'],
+    ['/privacy.html',   '2026-04-22', 'yearly',  '0.3'],
+    ['/terms.html',     '2026-04-22', 'yearly',  '0.3'],
+    ['/sms-terms.html', '2026-04-29', 'yearly',  '0.3'],
+    ['/cookies.html',   '2026-04-22', 'yearly',  '0.3'],
   ];
+
+  // Blog posts — add each new post here when publishing
+  const blogPosts = [
+    ['/blog/why-ai-workflow-implementations-fail/', '2026-05-21', 'monthly', '0.8'],
+  ];
+
+  const allPages = [...staticPages, ...blogPosts];
+
+  const urlElements = allPages.map(([path, lastmod, changefreq, priority]) => [
+    '  <url>',
+    `    <loc>${escapeXml(`${url.origin}${path}`)}</loc>`,
+    `    <lastmod>${lastmod}</lastmod>`,
+    `    <changefreq>${changefreq}</changefreq>`,
+    `    <priority>${priority}</priority>`,
+    '  </url>',
+  ].join('\n'));
+
   const body = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...pages.map((path) => `  <url><loc>${escapeXml(`${url.origin}${path}`)}</loc></url>`),
+    ...urlElements,
     '</urlset>',
     ''
   ].join('\n');

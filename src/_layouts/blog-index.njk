@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>{% include "head.njk" %}</head>
+<body data-theme="dark">
+
+{% include "header.njk" %}
+
+<main id="main">
+
+    <!-- Blog hero banner -->
+    <section class="blog-hero">
+        <div class="blog-hero__container">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol class="breadcrumb__list">
+                    <li class="breadcrumb__item"><a href="/" class="breadcrumb__link">Home</a></li>
+                    <li class="breadcrumb__item" aria-current="page">Blog</li>
+                </ol>
+            </nav>
+            <h1 class="blog-hero__title">Insights</h1>
+            <p class="blog-hero__subtitle">
+                AI automation, data engineering, and workflow optimization — straight from the ByteStreams team.
+            </p>
+        </div>
+    </section>
+
+    <!-- Post grid -->
+    <section class="blog-listing section">
+        <div class="section__container">
+
+            {% if pagination.items.length == 0 %}
+            <p class="blog-listing__empty">No posts yet — check back soon.</p>
+            {% endif %}
+
+            <div class="blog-grid">
+                {% for post in pagination.items %}
+                <article class="post-card">
+                    <div class="post-card__meta">
+                        {% if post.data.category %}
+                        <span class="post-card__tag">{{ post.data.category }}</span>
+                        {% endif %}
+                        <time class="post-card__date" datetime="{{ post.date | dateISO }}">
+                            {{ post.date | dateDisplay }}
+                        </time>
+                    </div>
+                    <h2 class="post-card__title">
+                        <a href="{{ post.url }}" class="post-card__link">{{ post.data.title }}</a>
+                    </h2>
+                    <p class="post-card__excerpt">{{ post.data.description }}</p>
+                    <div class="post-card__footer">
+                        <span class="post-card__read-time">
+                            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                            {{ post.content | readingTime }}
+                        </span>
+                        <a href="{{ post.url }}" class="post-card__cta" aria-label="Read: {{ post.data.title }}">
+                            Read more <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination.href.previous or pagination.href.next %}
+            <nav class="blog-pagination" aria-label="Blog pagination">
+                {% if pagination.href.previous %}
+                <a href="{{ pagination.href.previous }}" class="btn btn--ghost">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Newer Posts
+                </a>
+                {% endif %}
+                <span class="blog-pagination__info">
+                    Page {{ pagination.pageNumber + 1 }} of {{ pagination.pages.length }}
+                </span>
+                {% if pagination.href.next %}
+                <a href="{{ pagination.href.next }}" class="btn btn--ghost">
+                    Older Posts <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                {% endif %}
+            </nav>
+            {% endif %}
+
+        </div>
+    </section>
+
+</main>
+
+{% include "footer.njk" %}
+
+<script src="/js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// =========================================================================
+// Blog — styles for /blog/ listing and individual post pages
+// Uses ByteStreams design tokens from _variables.scss
+// =========================================================================
+
+// ---- Breadcrumb ----------------------------------------------------------
+.breadcrumb {
+  margin-bottom: $space-lg;
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-xs;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: $font-size-small;
+    color: var(--text-muted);
+
+    li + li::before {
+      content: '/';
+      margin-right: $space-xs;
+      color: var(--border);
+    }
+  }
+
+  &__link {
+    color: var(--text-muted);
+    transition: color $motion-micro $ease-out;
+
+    &:hover { color: $flow-blue; }
+  }
+}
+
+// ---- Blog Hero -----------------------------------------------------------
+.blog-hero {
+  padding: $space-3xl 0 $space-2xl;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+
+  &__container {
+    @include container($container-max);
+  }
+
+  &__title {
+    font-size: $font-size-display;
+    font-weight: $weight-bold;
+    color: var(--text);
+    letter-spacing: $ls-h1;
+    line-height: $lh-h1;
+    margin: 0 0 $space-md;
+  }
+
+  &__subtitle {
+    font-size: $font-size-h4;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0;
+    line-height: $lh-body;
+  }
+}
+
+// ---- Blog Listing --------------------------------------------------------
+.blog-listing {
+  padding: $space-3xl 0;
+
+  &__empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: $space-3xl 0;
+  }
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-xl;
+
+  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @include mobile             { grid-template-columns: 1fr; }
+}
+
+// ---- Post Card -----------------------------------------------------------
+.post-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: $radius-lg;
+  padding: $space-xl;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  transition: border-color $motion-standard $ease-standard,
+              box-shadow   $motion-standard $ease-standard;
+
+  &:hover {
+    border-color: $stream-blue;
+    box-shadow: $shadow-glow-blue;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    flex-wrap: wrap;
+  }
+
+  &__tag {
+    font-size: $font-size-tiny;
+    font-weight: $weight-semi;
+    letter-spacing: $ls-tiny;
+    text-transform: uppercase;
+    color: $stream-blue;
+    background: rgba(37, 99, 235, 0.12);
+    padding: 2px $space-sm;
+    border-radius: $radius-full;
+  }
+
+  &__date {
+    font-size: $font-size-tiny;
+    color: var(--text-muted);
+  }
+
+  &__title {
+    font-size: $font-size-h4;
+    font-weight: $weight-semi;
+    color: var(--text);
+    margin: 0;
+    line-height: $lh-h4;
+  }
+
+  &__link {
+    color: inherit;
+    transition: color $motion-micro $ease-out;
+
+    &:hover { color: $flow-blue; }
+  }
+
+  &__excerpt {
+    font-size: $font-size-small;
+    color: var(--text-muted);
+    line-height: $lh-body;
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: $space-md;
+    border-top: 1px solid var(--border);
+  }
+
+  &__read-time {
+    font-size: $font-size-tiny;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  &__cta {
+    font-size: $font-size-small;
+    font-weight: $weight-medium;
+    color: $flow-blue;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    transition: gap $motion-micro $ease-out;
+
+    &:hover { gap: $space-sm; }
+  }
+}
+
+// ---- Pagination ----------------------------------------------------------
+.blog-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-lg;
+  margin-top: $space-3xl;
+  padding-top: $space-2xl;
+  border-top: 1px solid var(--border);
+
+  &__info {
+    font-size: $font-size-small;
+    color: var(--text-muted);
+  }
+}
+
+// ---- Individual Post -----------------------------------------------------
+.blog-post {
+  padding: $space-3xl 0;
+
+  &__container {
+    @include container($container-max);
+    max-width: 800px;
+  }
+
+  &__header {
+    margin-bottom: $space-3xl;
+  }
+
+  &__title {
+    font-size: $font-size-display;
+    font-weight: $weight-bold;
+    color: var(--text);
+    letter-spacing: $ls-h1;
+    line-height: $lh-h1;
+    margin: $space-md 0;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    color: var(--text-muted);
+    font-size: $font-size-small;
+  }
+
+  &__divider { color: var(--border); }
+
+  &__read-time {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  // Rendered Markdown body
+  &__body {
+    font-size: $font-size-base;
+    line-height: $lh-body;
+    color: var(--text-muted);
+
+    h2 {
+      font-size: $font-size-h2;
+      font-weight: $weight-semi;
+      color: var(--text);
+      letter-spacing: $ls-h2;
+      line-height: $lh-h2;
+      margin: $space-3xl 0 $space-lg;
+    }
+
+    h3 {
+      font-size: $font-size-h3;
+      font-weight: $weight-semi;
+      color: var(--text);
+      letter-spacing: $ls-h3;
+      line-height: $lh-h3;
+      margin: $space-2xl 0 $space-md;
+    }
+
+    p { margin: 0 0 $space-lg; }
+
+    ul, ol {
+      padding-left: $space-xl;
+      margin: 0 0 $space-lg;
+      li { margin-bottom: $space-sm; }
+    }
+
+    a {
+      color: $flow-blue;
+      &:hover { color: $stream-blue; }
+    }
+
+    code {
+      font-family: $font-mono;
+      font-size: 0.875em;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: $radius-sm;
+      padding: 2px 6px;
+    }
+
+    pre {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: $radius-md;
+      padding: $space-lg;
+      overflow-x: auto;
+      margin: 0 0 $space-lg;
+
+      code {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: $font-size-small;
+      }
+    }
+
+    blockquote {
+      border-left: 3px solid $stream-blue;
+      padding: $space-sm $space-lg;
+      margin: 0 0 $space-lg;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: $space-3xl 0;
+    }
+
+    strong { color: var(--text); font-weight: $weight-semi; }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: $radius-md;
+      margin: $space-lg 0;
+    }
+  }
+
+  &__footer {
+    margin-top: $space-3xl;
+    padding-top: $space-2xl;
+    border-top: 1px solid var(--border);
+  }
+}
+
+// ---- Post tag badge (used in individual post header) ---------------------
+.post-tag {
+  display: inline-block;
+  font-size: $font-size-tiny;
+  font-weight: $weight-semi;
+  letter-spacing: $ls-tiny;
+  text-transform: uppercase;
+  color: $data-teal;
+  background: rgba(6, 182, 212, 0.12);
+  padding: 3px $space-sm;
+  border-radius: $radius-full;
+}
