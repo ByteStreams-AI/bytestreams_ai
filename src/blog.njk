@@ -1,0 +1,11 @@
+---
+layout: blog-index.njk
+title: "Insights | ByteStreams"
+description: "Expert insights on AI automation, data engineering, and workflow optimization from the ByteStreams team."
+keywords: "AI automation, data engineering, workflow optimization, LLM integration, ByteStreams blog"
+pagination:
+  data: collections.posts
+  size: 9
+  alias: posts
+permalink: "/blog/{% if pagination.pageNumber > 0 %}page/{{ pagination.pageNumber + 1 }}/{% endif %}"
+---

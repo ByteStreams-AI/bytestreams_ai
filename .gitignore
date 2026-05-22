@@ -11,3 +11,6 @@ public/
 
 # Local secrets for Wrangler dev
 .dev.vars
+
+# Local environment variables — never commit
+.env

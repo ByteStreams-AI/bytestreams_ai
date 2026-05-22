@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include "head.njk" %}
+
+<!-- Article JSON-LD structured data — required per SEO standards -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ title | replace('"', '\\"') }}",
+  "description": "{{ description | replace('"', '\\"') }}",
+  "datePublished": "{{ page.date | dateISO }}",
+  "dateModified": "{{ page.date | dateISO }}",
+  "author": {
+    "@type": "Organization",
+    "name": "{{ site.name }}",
+    "url": "{{ site.url }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ site.name }}",
+    "url": "{{ site.url }}"
+  },
+  "url": "{{ site.url }}{{ page.url }}"
+}
+</script>
+</head>
+<body data-theme="dark">
+
+{% include "header.njk" %}
+
+<main id="main">
+    <article class="blog-post" aria-labelledby="postTitle">
+        <div class="blog-post__container">
+
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol class="breadcrumb__list">
+                    <li class="breadcrumb__item"><a href="/" class="breadcrumb__link">Home</a></li>
+                    <li class="breadcrumb__item"><a href="/blog/" class="breadcrumb__link">Blog</a></li>
+                    <li class="breadcrumb__item" aria-current="page">{{ title }}</li>
+                </ol>
+            </nav>
+
+            <!-- Post header -->
+            <header class="blog-post__header">
+                {% if category %}
+                <span class="post-tag">{{ category }}</span>
+                {% endif %}
+                <h1 class="blog-post__title" id="postTitle">{{ title }}</h1>
+                <div class="blog-post__meta">
+                    <time class="blog-post__date" datetime="{{ page.date | dateISO }}">
+                        {{ page.date | dateDisplay }}
+                    </time>
+                    <span class="blog-post__divider" aria-hidden="true">·</span>
+                    <span class="blog-post__read-time">
+                        <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                        {{ content | readingTime }}
+                    </span>
+                </div>
+            </header>
+
+            <!-- Post body — Markdown renders here -->
+            <div class="blog-post__body">
+                {{ content | safe }}
+            </div>
+
+            <!-- Post footer -->
+            <footer class="blog-post__footer">
+                <a href="/blog/" class="btn btn--ghost">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to Blog
+                </a>
+            </footer>
+
+        </div>
+    </article>
+</main>
+
+{% include "footer.njk" %}
+
+<script src="/js/main.js" defer></script>
+</body>
+</html>
