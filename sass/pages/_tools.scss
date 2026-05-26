@@ -1,0 +1,179 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// ---------- Tools page hero ---------------------------------------------
+.tools-hero {
+  padding: $space-3xl 0 $space-2xl;
+  background: var(--hero-bg);
+  text-align: center;
+
+  &__container {
+    @include container($container-max-wide);
+  }
+
+  &__eyebrow {
+    font-size: $font-size-tiny;
+    font-weight: $weight-semi;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $stream-blue;
+    margin: 0 0 $space-sm;
+  }
+
+  &__title {
+    font-size: $font-size-display;
+    font-weight: $weight-bold;
+    line-height: 1.1;
+    margin: 0 0 $space-md;
+    text-wrap: balance;
+
+    @include mobile {
+      font-size: $font-size-h1;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1.0625rem;
+    color: var(--text-muted);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: $lh-body;
+  }
+}
+
+// ---------- Product grid ------------------------------------------------
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-xl;
+
+  @include below-desktop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ---------- Product Card ------------------------------------------------
+.product-card {
+  @include surface-card;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  @include transition(border-color transform box-shadow, $motion-standard);
+
+  &:hover {
+    border-color: rgba($stream-blue, 0.45);
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+
+  &--muted {
+    opacity: 0.72;
+
+    &:hover {
+      transform: none;
+      border-color: var(--border);
+      box-shadow: none;
+    }
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: $font-size-tiny;
+    font-weight: $weight-semi;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: $radius-full;
+    width: fit-content;
+
+    &--live {
+      background: rgba($signal-green, 0.15);
+      color: $signal-green;
+      border: 1px solid rgba($signal-green, 0.3);
+    }
+
+    &--soon {
+      background: rgba($byte-amber, 0.15);
+      color: $byte-amber;
+      border: 1px solid rgba($byte-amber, 0.3);
+    }
+  }
+
+  &__icon {
+    font-size: 1.625rem;
+    width: 52px;
+    height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-md;
+    background: var(--elevated);
+  }
+
+  &__name {
+    font-size: $font-size-h3;
+    font-weight: $weight-bold;
+    line-height: 1.2;
+    margin: 0;
+    color: var(--text);
+  }
+
+  &__tagline {
+    font-size: $font-size-small;
+    color: var(--text-muted);
+    font-weight: $weight-medium;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__description {
+    font-size: $font-size-small;
+    color: var(--text-muted);
+    line-height: $lh-body;
+    flex: 1;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-sm;
+    flex-wrap: wrap;
+    padding-top: $space-md;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+}
+
+// ---------- Section group label -----------------------------------------
+.tools-group {
+  margin-bottom: $space-3xl;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    font-size: $font-size-tiny;
+    font-weight: $weight-semi;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $muted;
+    margin-bottom: $space-xl;
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+  }
+}

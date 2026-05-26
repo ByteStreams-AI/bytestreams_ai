@@ -8,7 +8,7 @@
     "sass:watch": "sass --watch sass/main.scss dist/css/main.css",
     "serve": "python3 -m http.server 8000",
     "blog:build": "eleventy",
-    "blog:serve": "eleventy --serve --port 8080",    "social":      "node scripts/social-gen.js",    "build:public": "rm -rf public && mkdir -p public && cp *.html public/ && cp -r assets dist js public/ && find public/dist -name '*.map' -delete || true",
+    "blog:serve": "eleventy --serve --port 8080",    "social":      "node scripts/social-gen.js",    "build:public": "rm -rf public && mkdir -p public && cp *.html public/ && cp -r assets dist js public/ && cp robots.txt sitemap.xml public/ && find public/dist -name '*.map' -delete || true",
     "build": "npm run sass && npm run build:public && npm run blog:build",
     "dev:worker": "npm run build && wrangler dev --config wrangler.toml --port 8787"
   },

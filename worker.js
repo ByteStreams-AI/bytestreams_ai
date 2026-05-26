@@ -139,6 +139,7 @@ function handleSitemap(url) {
   const staticPages = [
     ['/',               '2026-05-21', 'weekly',  '1.0'],
     ['/blog/',          '2026-05-21', 'weekly',  '0.9'],
+    ['/tools.html',     '2026-05-26', 'monthly', '0.8'],
     ['/privacy.html',   '2026-04-22', 'yearly',  '0.3'],
     ['/terms.html',     '2026-04-22', 'yearly',  '0.3'],
     ['/sms-terms.html', '2026-04-29', 'yearly',  '0.3'],
