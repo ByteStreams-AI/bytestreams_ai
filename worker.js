@@ -148,6 +148,8 @@ function handleSitemap(url) {
   // Blog posts — add each new post here when publishing
   const blogPosts = [
     ['/blog/why-ai-workflow-implementations-fail/', '2026-05-21', 'monthly', '0.8'],
+    ['/blog/aws-mcp-server-goes-ga/', '2026-07-07', 'monthly', '0.8'],
+    ['/blog/claude-dynamic-workflows/', '2026-07-07', 'monthly', '0.8'],
   ];
 
   const allPages = [...staticPages, ...blogPosts];
