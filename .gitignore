@@ -5,6 +5,8 @@ dist/css/main.css.map
 
 # Deploy staging directory — rebuilt fresh by CI
 public/
+!public/portal.html
+!public/admin.html
 
 # Wrangler local state
 .wrangler/

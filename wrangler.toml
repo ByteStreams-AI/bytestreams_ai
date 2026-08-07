@@ -21,7 +21,16 @@ compatibility_flags = []
 # mistake — corrected during the Resend migration.
 [vars]
 CONTACT_EMAIL = "hello@bytestreams.ai"
-SITE_NAME = "ByteStreams"
+SITE_NAME     = "ByteStreams"
+SITE_URL      = "https://bytestreams.ai"
+
+# Supabase — project mxhyvvgjtqllohpvrwon (dev) / klzznfagrtormretqsgb (prod)
+SUPABASE_URL      = "https://mxhyvvgjtqllohpvrwon.supabase.co"
+# SUPABASE_ANON_KEY — safe to commit; this is the public anon key from Supabase dashboard
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14aHl2dmdqdHFsbG9ocHZyd29uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5ODUxNTQsImV4cCI6MjA5MzU2MTE1NH0.ripE2vCVq_SGDCIjMpW2tBnvVZVNRT78mDWYzgaOx80"
+
+# Stripe publishable key — safe to commit (pk_live_... or pk_test_...)
+STRIPE_PUBLISHABLE_KEY = "pk_test_51TUZtORrmddnOdHkrUR2E2FSE00Z4FD0n5is4aGTeIdfB8hdFcg9UcFn33sEJITrKrEkUWR1RuHcBk13LvceCdAb00g41bVj85"
 
 # Required secret (not stored in this file): RESEND_API_KEY
 # The `/api/contact` handler uses this to authenticate with Resend's
@@ -62,6 +71,16 @@ run_worker_first = [
   "/.well-known/*",
   "/api/*"
 ]
+
+# Cron: generate monthly billing records at 08:00 UTC on the 1st of each month
+[triggers]
+crons = ["0 8 * * *"]
+
+# Required secrets — never commit values; set via:
+#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   npx wrangler secret put STRIPE_SECRET_KEY
+#   npx wrangler secret put STRIPE_WEBHOOK_SECRET
 
 # Keep Worker observability settings in source control so dashboard and
 # CI/CD deployments stay consistent.
