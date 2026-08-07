@@ -1307,6 +1307,8 @@ async function generateMonthlyBilling(env) {
       console.error(`Billing generation failed for business ${biz.id}:`, err.message);
     }
   }
+  return created;
+}
 
 async function generateRollingBilling(env) {
   const todayStr    = new Date().toISOString().slice(0, 10);
