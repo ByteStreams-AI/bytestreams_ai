@@ -1380,6 +1380,8 @@ async function sendUpcomingBillReminders(env) {
 }
 
 // ── Admin: /api/admin/message ──────────────────────────────────────────────────
+
+async function handleAdminPostMessage(request, env) {
   const [, admin] = await requireAdmin(request, env);
   if (!admin) return jsonResponse({ error: 'Unauthorized' }, 401);
 
