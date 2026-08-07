@@ -1377,9 +1377,9 @@ async function sendUpcomingBillReminders(env) {
       console.error(`Reminder email failed for bill ${bill.id}:`, err.message);
     }
   }
-}───
+}
 
-async function handleAdminPostMessage(request, env) {
+// ── Admin: /api/admin/message ──────────────────────────────────────────────────
   const [, admin] = await requireAdmin(request, env);
   if (!admin) return jsonResponse({ error: 'Unauthorized' }, 401);
 
