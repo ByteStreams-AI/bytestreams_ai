@@ -490,6 +490,13 @@ async function getPortalUser(request, env) {
 }
 
 async function requireAdmin(request, env) {
+  // Accept shared secret from intranet proxy (server-to-server, never exposed to browser)
+  if (env.ADMIN_SECRET) {
+    const auth = request.headers.get('Authorization') ?? '';
+    if (auth === `Bearer ${env.ADMIN_SECRET}`) {
+      return [null, { is_admin: true }];
+    }
+  }
   const user = await getPortalUser(request, env);
   if (!user) return [null, null];
   const accounts = await sbQuery('portal_accounts', { 'auth_user_id': `eq.${user.id}`, 'select': '*', 'limit': '1' }, env);
