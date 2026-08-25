@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Customer Portal | DialTone by ByteStreams</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/bytestreams-icon-256.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    :root {
+      --void:         #0D1117;
+      --carbon:       #161B22;
+      --slate:        #21262D;
+      --edge:         #30363D;
+      --bright:       #F0F6FC;
+      --muted:        #8B949E;
+      --faded:        #484F58;
+      --stream-blue:  #2563EB;
+      --flow-blue:    #3B82F6;
+      --data-teal:    #06B6D4;
+      --signal-green: #10B981;
+      --byte-amber:   #F59E0B;
+      --error:        #EF4444;
+      --font:         'Inter', -apple-system, 'Segoe UI', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--void);
+      color: var(--bright);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hidden { display: none !important; }
+    .text-muted { color: var(--muted); font-size: 0.875rem; }
+
+    /* ── Loading ─────────────────────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--void);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--edge);
+      border-top-color: var(--stream-blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Auth pages ──────────────────────────────────────────────────── */
+    .page-auth {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.1) 0%, transparent 55%), var(--void);
+    }
+    .auth-card {
+      background: var(--carbon);
+      border: 1px solid var(--edge);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%; max-width: 420px;
+      text-align: center;
+    }
+    .auth-logo { height: 40px; margin-bottom: 28px; }
+    .auth-card h1 {
+      font-size: 1.375rem; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 8px;
+    }
+    .auth-card .subtitle {
+      color: var(--muted); font-size: 0.9rem; margin-bottom: 32px;
+    }
+    .check-email-icon { font-size: 44px; margin-bottom: 16px; }
+    .login-tabs { display:flex; gap:4px; background:var(--slate); border-radius:8px; padding:4px; margin-bottom:24px; }
+    .login-tab { flex:1; padding:8px; border:none; border-radius:6px; background:transparent; color:var(--muted); font-size:0.875rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+    .login-tab.active { background:var(--carbon); color:var(--bright); }
+
+    /* ── Forms ───────────────────────────────────────────────────────── */
+    .form-group { text-align: left; margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 0.75rem; font-weight: 600;
+      color: var(--muted); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      background: var(--slate); border: 1px solid var(--edge);
+      border-radius: 8px; padding: 10px 14px;
+      color: var(--bright); font-family: var(--font); font-size: 0.9375rem;
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: var(--stream-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .form-group textarea { resize: vertical; min-height: 96px; }
+    .form-group select option { background: var(--slate); }
+
+    /* ── Buttons ─────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 20px; border-radius: 8px;
+      font-family: var(--font); font-size: 0.9375rem; font-weight: 600;
+      cursor: pointer; border: none; outline: none;
+      transition: background 0.15s, opacity 0.15s; text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary   { background: var(--stream-blue); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled) { background: var(--flow-blue); }
+    .btn-secondary { background: var(--slate); color: var(--bright); border: 1px solid var(--edge); }
+    .btn-secondary:hover:not(:disabled) { background: var(--edge); }
+    .btn-ghost     { background: transparent; color: var(--muted); border: 1px solid var(--edge); padding: 7px 14px; font-size: 0.875rem; }
+    .btn-ghost:hover:not(:disabled) { color: var(--bright); border-color: var(--muted); }
+    .btn-sm        { padding: 7px 14px; font-size: 0.875rem; }
+
+    /* ── Badges ──────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .badge-info    { background: rgba(37,99,235,0.14);  color: var(--flow-blue);    border: 1px solid rgba(37,99,235,0.3); }
+    .badge-success { background: rgba(16,185,129,0.12); color: var(--signal-green); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-warning { background: rgba(245,158,11,0.12); color: var(--byte-amber);   border: 1px solid rgba(245,158,11,0.3); }
+    .badge-error   { background: rgba(239,68,68,0.12);  color: var(--error);        border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ── Status messages ─────────────────────────────────────────────── */
+    .status-msg {
+      padding: 12px 16px; border-radius: 8px;
+      font-size: 0.875rem; margin-top: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .status-msg.success { background: rgba(16,185,129,0.1);  color: var(--signal-green); border: 1px solid rgba(16,185,129,0.25); }
+    .status-msg.error   { background: rgba(239,68,68,0.1);   color: var(--error);        border: 1px solid rgba(239,68,68,0.25); }
+
+    /* ── Portal header ───────────────────────────────────────────────── */
+    .portal-header {
+      background: var(--carbon); border-bottom: 1px solid var(--edge);
+      padding: 0 24px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-logo img { height: 34px; display: block; }
+    .header-right    { display: flex; align-items: center; gap: 12px; }
+
+    /* ── Dashboard main ──────────────────────────────────────────────── */
+    .portal-main {
+      max-width: 1040px; margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    /* ── Restaurant banner ───────────────────────────────────────────── */
+    .business-banner {
+      display: flex; align-items: center; gap: 20px;
+      padding: 24px; margin-bottom: 28px;
+      background: var(--carbon); border: 1px solid var(--edge); border-radius: 16px;
+    }
+    .biz-logo-wrap {
+      width: 72px; height: 72px; flex-shrink: 0;
+      border-radius: 12px; overflow: hidden;
+      background: var(--slate); border: 1px solid var(--edge);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .biz-logo         { width: 100%; height: 100%; object-fit: cover; }
+    .biz-logo-icon    { font-size: 26px; color: var(--faded); }
+    .biz-name         { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+
+    /* ── Info cards ──────────────────────────────────────────────────── */
+    .cards-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+    }
+    @media (max-width: 600px) { .cards-row { grid-template-columns: 1fr; } }
+
+    .info-card {
+      background: var(--carbon); border: 1px solid var(--edge);
+      border-radius: 16px; padding: 24px;
+    }
+    .info-card--accent {
+      background: linear-gradient(135deg, rgba(37,99,235,0.1) 0%, rgba(6,182,212,0.04) 100%);
+      border-color: rgba(37,99,235,0.28);
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+    }
+    .card-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .card-date  { font-size: 0.75rem; color: var(--faded); }
+    .card-body  { font-size: 0.9375rem; color: var(--bright); line-height: 1.6; min-height: 44px; }
+    .card-body.empty { color: var(--faded); font-style: italic; }
+
+    /* ── Section title ───────────────────────────────────────────────── */
+    .section-title { font-size: 1.125rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 16px; }
+    .section-gap   { margin-top: 32px; }
+
+    /* ── Billing card ────────────────────────────────────────────────── */
+    .billing-card {
+      background: var(--carbon); border: 1px solid var(--edge);
+      border-radius: 16px; padding: 28px; margin-bottom: 8px;
+    }
+    .billing-meta {
+      display: flex; gap: 32px; flex-wrap: wrap;
+      padding-bottom: 24px; margin-bottom: 24px;
+      border-bottom: 1px solid var(--edge);
+    }
+    .billing-field-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+    .billing-field-value { font-size: 1rem; font-weight: 600; color: var(--bright); }
+    .billing-field-value--lg { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    #payment-element {
+      background: var(--slate); border: 1px solid var(--edge);
+      border-radius: 8px; padding: 16px; margin-bottom: 16px;
+    }
+
+    /* ── Billing history table ───────────────────────────────────────── */
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .history-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted);
+      border-bottom: 1px solid var(--edge);
+    }
+    .history-table td { padding: 12px 16px; border-bottom: 1px solid rgba(48,54,61,0.5); vertical-align: middle; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ── Message card ────────────────────────────────────────────────── */
+    .msg-card {
+      background: var(--carbon); border: 1px solid var(--edge);
+      border-radius: 16px; padding: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- Login -->
+<div id="page-login" class="page-auth hidden">
+  <div class="auth-card">
+    <a href="/"><img src="/assets/blue-side-slim-logo.png" alt="ByteStreams" class="auth-logo"></a>
+    <h1>Customer Portal</h1>
+    <div class="login-tabs">
+      <button class="login-tab active" id="tab-magic">Magic Link</button>
+      <button class="login-tab" id="tab-password">Password</button>
+    </div>
+    <div id="login-magic">
+      <p class="subtitle">Enter your email to receive a secure sign-in link.</p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email address</label>
+          <input id="login-email" type="email" autocomplete="email" required placeholder="you@yourrestaurant.com">
+        </div>
+        <button type="submit" class="btn btn-primary" id="login-btn">Send sign-in link</button>
+        <div id="login-error" class="status-msg error hidden"></div>
+      </form>
+    </div>
+    <div id="login-password" class="hidden">
+      <p class="subtitle">Sign in with your email and password.</p>
+      <form id="pw-login-form">
+        <div class="form-group">
+          <label for="pw-email">Email address</label>
+          <input id="pw-email" type="email" autocomplete="email" required placeholder="you@yourrestaurant.com">
+        </div>
+        <div class="form-group">
+          <label for="pw-password">Password</label>
+          <input id="pw-password" type="password" autocomplete="current-password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+        </div>
+        <button type="submit" class="btn btn-primary" id="pw-btn">Sign in</button>
+        <div id="pw-error" class="status-msg error hidden"></div>
+        <a href="#" id="forgot-pw-link" style="display:block;margin-top:14px;font-size:0.85rem;color:var(--muted);">Forgot password?</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Reset password (returned from reset email) -->
+<div id="page-reset-password" class="page-auth hidden">
+  <div class="auth-card">
+    <a href="/"><img src="/assets/blue-side-slim-logo.png" alt="ByteStreams" class="auth-logo"></a>
+    <h1>Set New Password</h1>
+    <p class="subtitle">Choose a new password for your account.</p>
+    <form id="reset-pw-form">
+      <div class="form-group">
+        <label for="new-password">New password</label>
+        <input id="new-password" type="password" autocomplete="new-password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" minlength="8">
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirm password</label>
+        <input id="confirm-password" type="password" autocomplete="new-password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" minlength="8">
+      </div>
+      <button type="submit" class="btn btn-primary" id="reset-pw-btn">Update password</button>
+      <div id="reset-pw-error" class="status-msg error hidden"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Check email -->
+<div id="page-check-email" class="page-auth hidden">
+  <div class="auth-card">
+    <div class="check-email-icon">✉️</div>
+    <h1>Check your inbox</h1>
+    <p class="subtitle">A sign-in link was sent to<br><strong id="sent-to-addr"></strong></p>
+    <p class="text-muted" style="margin-top:16px;">Click the link in the email to access your portal.</p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="page-dashboard" class="hidden">
+  <header class="portal-header">
+    <a href="/" class="header-logo"><img src="/assets/blue-side-slim-logo.png" alt="ByteStreams"></a>
+    <div class="header-right">
+      <span id="last-login-badge" class="badge badge-info hidden">
+        <i class="fa-regular fa-clock"></i> Last login: <strong id="last-login-val"></strong>
+      </span>
+      <button id="logout-btn" class="btn btn-ghost btn-sm">Sign out</button>
+    </div>
+  </header>
+
+  <main class="portal-main">
+
+    <!-- Business banner -->
+    <div class="business-banner">
+      <div class="biz-logo-wrap">
+        <img id="biz-logo" src="" alt="" class="biz-logo hidden">
+        <span id="biz-logo-icon" class="biz-logo-icon"><i class="fa-solid fa-utensils"></i></span>
+      </div>
+      <div>
+        <h1 id="biz-name" class="biz-name">—</h1>
+        <p class="text-muted">Customer Portal</p>
+        <a id="biz-menu-link" href="#" target="_blank" rel="noopener" class="hidden" style="font-size:0.8rem;color:var(--stream-blue);">View menu ↗</a>
+      </div>
+    </div>
+
+    <!-- Info cards -->
+    <div class="cards-row">
+      <div class="info-card">
+        <div class="card-header">
+          <span class="card-title">General Information</span>
+          <span id="general-date" class="card-date"></span>
+        </div>
+        <div id="general-msg" class="card-body empty">No Message</div>
+      </div>
+      <div class="info-card info-card--accent">
+        <div class="card-header">
+          <span class="card-title">Your Account</span>
+          <span id="customer-date" class="card-date"></span>
+        </div>
+        <div id="customer-msg" class="card-body empty">No Message</div>
+      </div>
+    </div>
+
+    <!-- Current bill -->
+    <div class="section-gap">
+      <h2 class="section-title">Current Bill</h2>
+      <div class="billing-card">
+        <p id="bill-loading" class="text-muted">Loading…</p>
+        <p id="bill-none" class="text-muted hidden">No bill found for this month.</p>
+
+        <div id="bill-content" class="hidden">
+          <div class="billing-meta">
+            <div>
+              <p class="billing-field-label">Service</p>
+              <p id="bill-service" class="billing-field-value">DialTone</p>
+            </div>
+            <div>
+              <p class="billing-field-label">Billing Period</p>
+              <p id="bill-period" class="billing-field-value">—</p>
+            </div>
+            <div>
+              <p class="billing-field-label">Due Date</p>
+              <p id="bill-due" class="billing-field-value">—</p>
+            </div>
+            <div>
+              <p class="billing-field-label">Amount</p>
+              <p id="bill-amount" class="billing-field-value billing-field-value--lg">—</p>
+            </div>
+            <div>
+              <p class="billing-field-label">Status</p>
+              <div id="bill-status"></div>
+            </div>
+          </div>
+
+          <!-- Onboarding note for unpaid setup fee -->
+          <p id="bill-setup-note" class="hidden" style="font-size:0.85rem;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:16px;">Your onboarding process will begin once this setup fee is paid.</p>
+
+          <!-- Stripe payment form -->
+          <div id="payment-section" class="hidden">
+            <div id="payment-element"></div>
+            <div id="payment-error" class="status-msg error hidden"></div>
+            <button id="pay-btn" class="btn btn-primary">
+              <i class="fa-brands fa-stripe-s"></i>
+              <span id="pay-btn-label">Pay now</span>
+            </button>
+          </div>
+          <div id="payment-success" class="status-msg success hidden">
+            <i class="fa-solid fa-circle-check"></i> Payment received — thank you!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing history -->
+    <div class="section-gap">
+      <h2 class="section-title">Billing History</h2>
+      <div class="billing-card" style="padding: 0; overflow: hidden;">
+        <p id="history-loading" class="text-muted" style="padding:24px;">Loading…</p>
+        <p id="history-none" class="text-muted hidden" style="padding:24px;">No billing history yet.</p>
+        <table id="history-table" class="history-table hidden">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Paid On</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Restaurant Profile (shown only when linked to a DialTone restaurant) -->
+    <div class="section-gap hidden" id="restaurant-profile-section">
+      <h2 class="section-title">Restaurant Profile</h2>
+      <div class="msg-card">
+        <div class="form-group">
+          <label for="profile-display-name">Display Name</label>
+          <input id="profile-display-name" type="text" maxlength="200" placeholder="The Golden Fork">
+        </div>
+        <div class="form-group">
+          <label>Logo</label>
+          <div style="display:flex;gap:16px;align-items:center;">
+            <img id="profile-logo-preview" src="" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;display:none;">
+            <input id="profile-logo-file" type="file" accept="image/*" style="flex:1;">
+          </div>
+        </div>
+        <button type="button" id="profile-save-btn" class="btn btn-primary" style="width:auto;">Save Profile</button>
+        <div id="profile-status" class="status-msg hidden" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Message form -->
+    <div class="section-gap">
+      <h2 class="section-title">Send a Message</h2>
+      <div class="msg-card">
+        <form id="msg-form">
+          <div class="form-group">
+            <label for="msg-email">Your email (for reply)</label>
+            <input id="msg-email" type="email" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label for="msg-body">Message</label>
+            <textarea id="msg-body" rows="4" placeholder="How can ByteStreams help you?" required maxlength="2000"></textarea>
+          </div>
+          <button type="submit" class="btn btn-secondary" id="msg-btn">
+            <i class="fa-solid fa-paper-plane"></i> Send to ByteStreams
+          </button>
+          <div id="msg-status" class="hidden"></div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+(async () => {
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+
+  function showPage(name) {
+    ['loading-overlay', 'page-login', 'page-check-email', 'page-dashboard', 'page-reset-password']
+      .forEach(id => $(id).classList.add('hidden'));
+    const target = name === 'loading' ? 'loading-overlay' : `page-${name}`;
+    $(target).classList.remove('hidden');
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function fmtMonth(isoDate) {
+    return new Date(isoDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  function fmtCents(cents) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+  }
+
+  function todayLong() {
+    return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function statusBadge(status) {
+    const map = {
+      paid:     ['badge-success', 'fa-circle-check',       'Paid'],
+      pending:  ['badge-warning', 'fa-clock',              'Due'],
+      overdue:  ['badge-error',   'fa-circle-exclamation', 'Overdue'],
+      refunded: ['badge-info',    'fa-rotate-left',        'Refunded'],
+      disputed: ['badge-error',   'fa-triangle-exclamation', 'Disputed'],
+    };
+    const [cls, icon, label] = map[status] ?? ['badge-info', 'fa-circle', status];
+    return `<span class="badge ${cls}"><i class="fa-solid ${icon}"></i> ${label}</span>`;
+  }
+
+  // ── Bootstrap ──────────────────────────────────────────────────────────────
+  let SUPABASE_URL, SUPABASE_ANON_KEY, STRIPE_PK;
+  let sb, stripe, stripeElements;
+  let session;
+
+  try {
+    const cfg = await fetch('/api/portal/config').then(r => r.json());
+    SUPABASE_URL     = cfg.supabase_url;
+    SUPABASE_ANON_KEY = cfg.supabase_anon_key;
+    STRIPE_PK        = cfg.stripe_publishable_key;
+  } catch {
+    showPage('login');
+    return;
+  }
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { showPage('login'); return; }
+
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const { data: { session: existing } } = await sb.auth.getSession();
+  if (existing) {
+    session = existing;
+    await loadDashboard();
+  } else {
+    showPage('login');
+  }
+
+  sb.auth.onAuthStateChange(async (event, s) => {
+    if (event === 'PASSWORD_RECOVERY') { showPage('reset-password'); }
+    else if (event === 'SIGNED_IN' && s) { session = s; await loadDashboard(); }
+    else if (event === 'SIGNED_OUT') { session = null; showPage('login'); }
+  });
+
+  // ── Login tab switching ────────────────────────────────────────────────────
+  $('tab-magic').addEventListener('click', () => {
+    $('login-magic').classList.remove('hidden');
+    $('login-password').classList.add('hidden');
+    $('tab-magic').classList.add('active');
+    $('tab-password').classList.remove('active');
+  });
+  $('tab-password').addEventListener('click', () => {
+    $('login-password').classList.remove('hidden');
+    $('login-magic').classList.add('hidden');
+    $('tab-password').classList.add('active');
+    $('tab-magic').classList.remove('active');
+  });
+
+  // ── Password login ─────────────────────────────────────────────────────────
+  $('pw-login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email    = $('pw-email').value.trim();
+    const password = $('pw-password').value;
+    const btn      = $('pw-btn');
+    $('pw-error').classList.add('hidden');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      $('pw-error').textContent = error.message;
+      $('pw-error').classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Sign in';
+    }
+    // success handled by onAuthStateChange SIGNED_IN
+  });
+
+  // ── Forgot password ────────────────────────────────────────────────────────
+  $('forgot-pw-link').addEventListener('click', async e => {
+    e.preventDefault();
+    const email = $('pw-email').value.trim();
+    $('pw-error').classList.add('hidden');
+    if (!email) {
+      $('pw-error').textContent = 'Enter your email address first.';
+      $('pw-error').classList.remove('hidden');
+      return;
+    }
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+    if (error) {
+      $('pw-error').textContent = error.message;
+      $('pw-error').classList.remove('hidden');
+    } else {
+      $('pw-btn').textContent = 'Reset email sent!';
+      $('pw-btn').disabled = true;
+    }
+  });
+
+  // ── Reset password form ────────────────────────────────────────────────────
+  $('reset-pw-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const newPw     = $('new-password').value;
+    const confirmPw = $('confirm-password').value;
+    const btn       = $('reset-pw-btn');
+    $('reset-pw-error').classList.add('hidden');
+    if (newPw !== confirmPw) {
+      $('reset-pw-error').textContent = 'Passwords do not match.';
+      $('reset-pw-error').classList.remove('hidden');
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Updating…';
+    const { error } = await sb.auth.updateUser({ password: newPw });
+    if (error) {
+      $('reset-pw-error').textContent = error.message;
+      $('reset-pw-error').classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Update password';
+    } else {
+      await loadDashboard();
+    }
+  });
+
+  // ── Magic link login ───────────────────────────────────────────────────────
+  $('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('login-email').value.trim();
+    const btn = $('login-btn');
+    $('login-error').classList.add('hidden');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
+
+    if (error) {
+      $('login-error').textContent = error.message;
+      $('login-error').classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Send sign-in link';
+    } else {
+      $('sent-to-addr').textContent = email;
+      showPage('check-email');
+    }
+  });
+
+  $('logout-btn').addEventListener('click', () => sb.auth.signOut());
+
+  // ── Dashboard ──────────────────────────────────────────────────────────────
+  async function loadDashboard() {
+    showPage('dashboard');
+
+    const today = todayLong();
+    $('general-date').textContent = today;
+    $('customer-date').textContent = today;
+
+    // Last login badge (from session user metadata)
+    const lastLogin = session.user.last_sign_in_at;
+    if (lastLogin) {
+      $('last-login-val').textContent = fmtDate(lastLogin);
+      $('last-login-badge').classList.remove('hidden');
+    }
+
+    try {
+      const headers = { 'Authorization': `Bearer ${session.access_token}` };
+
+      const [meRes, histRes] = await Promise.all([
+        fetch('/api/portal/me', { headers }),
+        fetch('/api/portal/billing-history', { headers })
+      ]);
+
+      if (meRes.status === 401) { await sb.auth.signOut(); return; }
+
+      const me   = await meRes.json();
+      const hist = histRes.ok ? await histRes.json() : [];
+
+      renderProfile(me);
+      initRestaurantProfile(me);
+      renderCurrentBill(me.current_bill);
+      renderHistory(hist);
+    } catch (err) {
+      console.error('Portal load error:', err);
+    }
+  }
+
+  function renderProfile(data) {
+    const { business, general_message, customer_message } = data;
+    if (!business) return;
+
+    $('biz-name').textContent = business.name ?? 'ByteStreams';
+
+    const logoEl = $('biz-logo');
+    const iconEl = $('biz-logo-icon');
+    const logoSrc = business.logo_url || '/assets/blue-side-slim-logo.png';
+    logoEl.src = logoSrc;
+    logoEl.alt = business.name ?? 'ByteStreams';
+    logoEl.classList.remove('hidden');
+    iconEl.classList.add('hidden');
+
+    if (business.slug) {
+      const link = $('biz-menu-link');
+      link.href = `https://${business.slug}.m.dialtone.menu/`;
+      link.classList.remove('hidden');
+    }
+
+    if (general_message) {
+      $('general-msg').textContent = general_message;
+      $('general-msg').classList.remove('empty');
+    }
+
+    if (customer_message) {
+      $('customer-msg').textContent = customer_message;
+      $('customer-msg').classList.remove('empty');
+    }
+
+    $('msg-email').value = data.account?.email ?? session.user.email ?? '';
+  }
+
+  function renderCurrentBill(bill) {
+    $('bill-loading').classList.add('hidden');
+    if (!bill) { $('bill-none').classList.remove('hidden'); return; }
+
+    const serviceLabel = bill.description || (bill.bill_type === 'setup' ? 'Setup Fee' : bill.bill_type === 'addon' ? 'Add-On' : 'DialTone');
+    $('bill-service').textContent = serviceLabel;
+    $('bill-period').textContent  = fmtMonth(bill.billing_month);
+    $('bill-due').textContent     = fmtDate(bill.due_date);
+    $('bill-amount').textContent  = fmtCents(bill.amount_cents);
+    $('bill-status').innerHTML    = statusBadge(bill.status);
+
+    // Only these statuses are collectable. A refunded or disputed bill must not
+    // re-offer the payment form, and the server rejects such attempts anyway.
+    const payable = ['pending', 'overdue'].includes(bill.status);
+
+    const setupNote = $('bill-setup-note');
+    if (bill.bill_type === 'setup' && payable) {
+      setupNote.classList.remove('hidden');
+    } else {
+      setupNote.classList.add('hidden');
+    }
+
+    $('bill-content').classList.remove('hidden');
+
+    if (payable) initPayment(bill);
+  }
+
+  function renderHistory(rows) {
+    $('history-loading').classList.add('hidden');
+    if (!rows.length) { $('history-none').classList.remove('hidden'); return; }
+
+    const tbody = $('history-tbody');
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${fmtMonth(r.billing_month)}</td>
+        <td>${fmtCents(r.amount_cents)}</td>
+        <td>${fmtDate(r.due_date)}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td>${r.paid_at ? fmtDate(r.paid_at) : '—'}</td>
+        <td><a href="/api/portal/invoice/${r.id}?token=${session.access_token}" target="_blank" rel="noopener" style="font-size:0.8rem;color:var(--stream-blue);">Invoice ↗</a></td>
+      </tr>
+    `).join('');
+
+    $('history-table').classList.remove('hidden');
+  }
+
+  function initRestaurantProfile(data) {
+    if (!data.business?.dialtone_location_id) return;
+    $('restaurant-profile-section').classList.remove('hidden');
+    if (data.restaurant_display_name) $('profile-display-name').value = data.restaurant_display_name;
+    if (data.business.logo_url) {
+      const prev = $('profile-logo-preview');
+      prev.src = data.business.logo_url;
+      prev.style.display = 'block';
+    }
+  }
+
+  $('profile-logo-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const prev = $('profile-logo-preview');
+    prev.src = url; prev.style.display = 'block';
+  });
+
+  $('profile-save-btn').addEventListener('click', async () => {
+    const btn       = $('profile-save-btn');
+    const statusEl  = $('profile-status');
+    const file      = $('profile-logo-file').files[0];
+    btn.disabled    = true;
+    btn.textContent = 'Saving…';
+    statusEl.className = 'status-msg hidden';
+
+    try {
+      let logoUrl = null;
+      if (file) {
+        const ext  = file.name.split('.').pop();
+        const path = `${session.user.id}/${Date.now()}.${ext}`;
+        const { data: uploadData, error: upErr } = await sb.storage
+          .from('restaurant-logos')
+          .upload(path, file, { upsert: true, contentType: file.type });
+        if (upErr) throw new Error(upErr.message);
+        const { data: { publicUrl } } = sb.storage.from('restaurant-logos').getPublicUrl(path);
+        logoUrl = publicUrl;
+      }
+
+      const body = { display_name: $('profile-display-name').value.trim() };
+      if (logoUrl) body.logo_url = logoUrl;
+
+      const res = await fetch('/api/portal/restaurant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify(body)
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error ?? 'Failed');
+
+      statusEl.textContent = 'Profile saved!';
+      statusEl.className = 'status-msg success';
+      if (logoUrl) { $('profile-logo-preview').src = logoUrl; $('profile-logo-preview').style.display = 'block'; }
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.className = 'status-msg error';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Profile';
+    }
+  });
+
+  // ── Stripe ─────────────────────────────────────────────────────────────────
+  async function initPayment(bill) {
+    if (!STRIPE_PK) return;
+    stripe = Stripe(STRIPE_PK);
+
+    let clientSecret;
+    try {
+      const res = await fetch('/api/portal/pay', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ bill_id: bill.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Payment setup failed');
+      clientSecret = data.client_secret;
+    } catch (err) {
+      console.error('Payment init:', err);
+      return;
+    }
+
+    stripeElements = stripe.elements({
+      clientSecret,
+      appearance: {
+        theme: 'night',
+        variables: {
+          colorPrimary: '#2563EB', colorBackground: '#21262D',
+          colorText: '#F0F6FC', colorDanger: '#EF4444',
+          fontFamily: 'Inter, -apple-system, sans-serif',
+          borderRadius: '8px',
+        }
+      }
+    });
+
+    stripeElements.create('payment').mount('#payment-element');
+    $('payment-section').classList.remove('hidden');
+
+    $('pay-btn').addEventListener('click', async () => {
+      const btn   = $('pay-btn');
+      const label = $('pay-btn-label');
+      const errEl = $('payment-error');
+
+      btn.disabled   = true;
+      label.textContent = 'Processing…';
+      errEl.classList.add('hidden');
+
+      const { error } = await stripe.confirmPayment({
+        elements: stripeElements,
+        confirmParams: { return_url: window.location.href },
+        redirect: 'if_required'
+      });
+
+      if (error) {
+        errEl.textContent = error.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        label.textContent = 'Try again';
+      } else {
+        $('payment-section').classList.add('hidden');
+        $('payment-success').classList.remove('hidden');
+        $('bill-status').innerHTML = statusBadge('paid');
+        $('bill-setup-note').classList.add('hidden');
+      }
+    });
+  }
+
+  // Handle Stripe 3DS redirect return
+  const sp = new URLSearchParams(window.location.search);
+  if (sp.get('payment_intent_client_secret') && sp.get('redirect_status') === 'succeeded') {
+    $('bill-setup-note').classList.add('hidden');
+    $('bill-status').innerHTML = statusBadge('paid');
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  // ── Message form ───────────────────────────────────────────────────────────
+  $('msg-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn      = $('msg-btn');
+    const statusEl = $('msg-status');
+
+    btn.disabled = true;
+    statusEl.className = 'hidden';
+
+    try {
+      const res = await fetch('/api/portal/message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          reply_email: $('msg-email').value.trim(),
+          message:     $('msg-body').value.trim()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Send failed');
+
+      statusEl.className = 'status-msg success';
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Message sent!';
+      $('msg-body').value = '';
+    } catch (err) {
+      statusEl.className = 'status-msg error';
+      statusEl.textContent = err.message;
+    }
+
+    statusEl.classList.remove('hidden');
+    btn.disabled = false;
+  });
+
+})();
+</script>
+</body>
+</html>

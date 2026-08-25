@@ -3,7 +3,10 @@ dist/css/main.css.map
 .DS_Store
 *.log
 
-# Deploy staging directory — rebuilt fresh by CI
+# Deploy staging directory — rebuilt fresh by CI.
+# Purely generated: every page ships from the repo root via `cp *.html public/`.
+# portal.html and admin.html used to live in here behind gitignore negations,
+# which meant `rm -rf public` silently dropped them from the deploy artifact.
 public/
 
 # Wrangler local state

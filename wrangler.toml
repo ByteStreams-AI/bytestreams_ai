@@ -21,7 +21,16 @@ compatibility_flags = []
 # mistake — corrected during the Resend migration.
 [vars]
 CONTACT_EMAIL = "hello@bytestreams.ai"
-SITE_NAME = "ByteStreams"
+SITE_NAME     = "ByteStreams"
+SITE_URL      = "https://bytestreams.ai"
+
+# Supabase — project mxhyvvgjtqllohpvrwon (dev) / klzznfagrtormretqsgb (prod)
+SUPABASE_URL      = "https://mxhyvvgjtqllohpvrwon.supabase.co"
+# SUPABASE_ANON_KEY — safe to commit; this is the public anon key from Supabase dashboard
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14aHl2dmdqdHFsbG9ocHZyd29uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5ODUxNTQsImV4cCI6MjA5MzU2MTE1NH0.ripE2vCVq_SGDCIjMpW2tBnvVZVNRT78mDWYzgaOx80"
+
+# Stripe publishable key — safe to commit (pk_live_... or pk_test_...)
+STRIPE_PUBLISHABLE_KEY = "pk_live_51TPSsg2KmwBSXLwCNSiNQO7lGGbawvkZRUVLAg7u3TaVeH7q2lCaEBisbziPwDLqtbVdqNSQLsYiPagvVugkYpVa00z3zmCtOB"
 
 # Required secret (not stored in this file): RESEND_API_KEY
 # The `/api/contact` handler uses this to authenticate with Resend's
@@ -62,6 +71,23 @@ run_worker_first = [
   "/.well-known/*",
   "/api/*"
 ]
+
+# Cron: 08:00 UTC daily. Generates recurring DialTone.Menu charges falling within
+# the next 5 days, then emails the payment reminders for bills due in 5 days —
+# generation first, so a bill created this run is notified in the same run.
+[triggers]
+crons = ["0 8 * * *"]
+
+# INVOICE_LINK_SECRET signs the emailed invoice links (HMAC-SHA256 over bill id +
+# expiry, 90-day TTL). Any long random string; rotating it invalidates links already
+# sent. If unset, receipt emails simply omit the invoice link — nothing else breaks.
+#   npx wrangler secret put INVOICE_LINK_SECRET
+#
+# Required secrets — never commit values; set via:
+#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   npx wrangler secret put STRIPE_SECRET_KEY
+#   npx wrangler secret put STRIPE_WEBHOOK_SECRET
 
 # Keep Worker observability settings in source control so dashboard and
 # CI/CD deployments stay consistent.

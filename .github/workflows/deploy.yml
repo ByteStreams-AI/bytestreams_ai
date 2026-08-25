@@ -60,6 +60,13 @@ jobs:
           test -f public/sms-terms.html
           # And the branded 404 page used by the Worker's `not_found_handling`.
           test -f public/404.html
+          # The customer portal and admin console. These once lived inside
+          # `public/` (tracked via gitignore negations), so `rm -rf public`
+          # above dropped them and every deploy silently shipped without a
+          # portal. They ship from the repo root now — guard them so a
+          # regression fails the build instead of taking the portal offline.
+          test -f public/portal.html
+          test -f public/admin.html
           # Strip sourcemaps from production (optional — remove if you want them)
           find public/dist -name '*.map' -delete || true
 
