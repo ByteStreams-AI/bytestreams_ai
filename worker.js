@@ -8,9 +8,10 @@ export default {
     return routeRequest(request, env, url);
   },
 
-  // Cron: 08:00 UTC daily — rolling 30-day billing + 5-day reminders
+  // Cron: 08:00 UTC daily. Generation runs first so a bill created today is picked
+  // up by the reminder pass in the same run.
   async scheduled(_event, env) {
-    await generateRollingBilling(env);
+    await generateRecurringBilling(env);
     await sendUpcomingBillReminders(env);
   }
 };
@@ -507,14 +508,28 @@ async function requireAdmin(request, env) {
 
 // ── Stripe helpers ─────────────────────────────────────────────────────────────
 
-async function stripePost(path, params, secretKey) {
+// `idempotencyKey` guards against duplicate charges when a request is retried
+// (client retry, Cloudflare retry, or a user double-tapping Pay). Stripe replays
+// the original response for 24h instead of creating a second object.
+async function stripePost(path, params, secretKey, idempotencyKey) {
+  const headers = {
+    'authorization': `Bearer ${secretKey}`,
+    'content-type': 'application/x-www-form-urlencoded',
+  };
+  if (idempotencyKey) headers['idempotency-key'] = idempotencyKey;
   const res = await fetch(`https://api.stripe.com/v1${path}`, {
     method: 'POST',
-    headers: {
-      'authorization': `Bearer ${secretKey}`,
-      'content-type': 'application/x-www-form-urlencoded',
-    },
+    headers,
     body: new URLSearchParams(params).toString()
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error?.message ?? `Stripe error ${res.status}`);
+  return json;
+}
+
+async function stripeGet(path, secretKey) {
+  const res = await fetch(`https://api.stripe.com/v1${path}`, {
+    headers: { 'authorization': `Bearer ${secretKey}` }
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.error?.message ?? `Stripe error ${res.status}`);
@@ -537,6 +552,76 @@ async function verifyStripeSignature(payload, sigHeader, secret) {
   let diff = 0;
   for (let i = 0; i < computed.length; i++) diff |= computed.charCodeAt(i) ^ sig.charCodeAt(i);
   return diff === 0;
+}
+
+// ── Stripe Tax ─────────────────────────────────────────────────────────────────
+
+// Mirrors getStripeTaxConfig() in bytestreams_info: an explicit env var wins,
+// otherwise the shared app_settings flag decides. Both services read the same flag
+// so Portal Admin cannot quote a tax-free bill that this path then re-quotes with
+// tax, or vice versa.
+async function getTaxConfig(env) {
+  const override = env.ENABLE_TAX_ASSESSMENT?.trim().toLowerCase();
+  let enabled;
+  if (override === 'true' || override === 'false') {
+    enabled = override === 'true';
+  } else {
+    const rows = await sbQuery('app_settings', {
+      'key': 'eq.enable_tax_assessment', 'select': 'value', 'limit': '1'
+    }, env).catch(() => []);
+    enabled = rows[0]?.value === 'true';
+  }
+  return { enabled, taxCode: env.STRIPE_TAX_CODE?.trim() || 'txcd_10103001' };
+}
+
+// Restaurants carry their verified address on the linked location; other business
+// types keep it on the business row itself. Returns null when neither is complete,
+// since Stripe Tax rejects a partial address rather than guessing.
+async function getBillingAddress(businessId, env) {
+  const biz = (await sbQuery('businesses', {
+    'id': `eq.${businessId}`,
+    'select': 'dialtone_location_id,address,address_city,address_state,address_postal_code',
+    'limit': '1'
+  }, env))[0];
+  if (!biz) return null;
+
+  if (biz.dialtone_location_id) {
+    const loc = (await sbQuery('locations', {
+      'id': `eq.${biz.dialtone_location_id}`,
+      'select': 'address_line1,city,state,postal_code,country', 'limit': '1'
+    }, env).catch(() => []))[0];
+    if (loc?.address_line1 && loc.city && loc.state && loc.postal_code) {
+      return {
+        line1: loc.address_line1, city: loc.city, state: loc.state,
+        postalCode: loc.postal_code, country: loc.country || 'US'
+      };
+    }
+  }
+
+  if (biz.address && biz.address_city && biz.address_state && biz.address_postal_code) {
+    return {
+      line1: biz.address, city: biz.address_city, state: biz.address_state,
+      postalCode: biz.address_postal_code, country: 'US'
+    };
+  }
+  return null;
+}
+
+async function calculateTax({ amountCents, address, reference, taxCode, env }) {
+  return stripePost('/tax/calculations', {
+    currency:                                 'usd',
+    'customer_details[address][line1]':       address.line1,
+    'customer_details[address][city]':        address.city,
+    'customer_details[address][state]':       address.state,
+    'customer_details[address][postal_code]': address.postalCode,
+    'customer_details[address][country]':     address.country,
+    'customer_details[address_source]':       'billing',
+    'line_items[0][amount]':                  String(amountCents),
+    'line_items[0][reference]':               reference,
+    'line_items[0][tax_behavior]':            'exclusive',
+    'line_items[0][tax_code]':                taxCode,
+    'expand[0]':                              'line_items.data.tax_breakdown',
+  }, env.STRIPE_SECRET_KEY);
 }
 
 // ── Portal: config (public) ────────────────────────────────────────────────────
@@ -569,49 +654,9 @@ async function handlePortalMe(request, env) {
     }, env);
     account.status = 'active';
 
-    // Create $100 one-time setup bill
-    if (account.business_id) {
-      const today        = new Date();
-      const billingMonth = today.toISOString().slice(0, 7) + '-01';
-      const dueDate      = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      const setupBill    = await sbInsert('billing_schedule', {
-        business_id:   account.business_id,
-        product:       'setup',
-        billing_month: billingMonth,
-        amount_cents:  10000,
-        due_date:      dueDate,
-        bill_type:     'setup',
-        description:   'One-Time Setup Fee',
-        status:        'pending',
-      }, env).catch(() => null);
-
-      if (setupBill && env.RESEND_API_KEY) {
-        const portalUrl = `${env.SITE_URL ?? 'https://bytestreams.ai'}/portal.html`;
-        const dueFmt    = new Date(dueDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { 'authorization': `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
-          body: JSON.stringify({
-            from:    'ByteStreams <contact@send.bytestreams.ai>',
-            to:      [account.email],
-            subject: 'ByteStreams — Setup Fee Invoice ($100.00)',
-            text: [
-              `Hi ${account.full_name || 'there'},`,
-              '',
-              'Welcome to ByteStreams! A one-time setup fee of $100.00 has been applied to your account.',
-              `Due: ${dueFmt}`,
-              '',
-              'Once payment is received, your onboarding process will begin.',
-              '',
-              `Pay securely through your portal: ${portalUrl}`,
-              '',
-              '— ByteStreams Team'
-            ].join('\n'),
-            html: buildSetupFeeEmailHtml({ fullName: account.full_name, dueDate: dueFmt, portalUrl }),
-          })
-        }).catch(() => {});
-      }
-    }
+    // The setup fee is invoiced by Portal Admin when the customer is created, not
+    // here. Creating it again on first login produced a second $100 bill under a
+    // different `product` value, which the unique key could not collapse.
   }
 
   let business = null;
@@ -725,17 +770,88 @@ async function handlePortalPay(request, env) {
   }, env);
   const bill = bills[0];
   if (!bill) return jsonResponse({ error: 'Bill not found' }, 404);
-  if (bill.status === 'paid') return jsonResponse({ error: 'Bill already paid' }, 400);
+  // Allowlist rather than blocklist — a refunded or disputed bill is not
+  // collectable, and neither is any status added later without review.
+  if (!['pending', 'overdue'].includes(bill.status)) {
+    return jsonResponse({ error: `Bill is not payable (status: ${bill.status})` }, 400);
+  }
 
-  // Reuse existing payment intent if one was already created for this bill
+  // Re-assess tax at payment time rather than trusting the figure quoted when the
+  // bill was generated. A calculation's rates are frozen at creation, but the
+  // transaction posts as effective on the day it is committed — so a bill quoted
+  // weeks ago would file stale rates against the current period, and would miss any
+  // registration added in between. Recalculating here keeps the amount charged and
+  // the amount filed in agreement. Runs before the intent-reuse check below so a
+  // changed total is picked up by the existing amount comparison.
+  const taxConfig = await getTaxConfig(env);
+  if (taxConfig.enabled) {
+    const address = await getBillingAddress(account.business_id, env);
+    if (!address) {
+      return jsonResponse({ error: 'A verified business address is required before payment' }, 409);
+    }
+    try {
+      const calc = await calculateTax({
+        amountCents: bill.subtotal_cents,
+        address,
+        reference:   `bill-${bill.id}`,
+        taxCode:     taxConfig.taxCode,
+        env,
+      });
+      if (calc.id !== bill.stripe_tax_calculation_id) {
+        await sbUpdate('billing_schedule', bill.id, {
+          tax_cents:                 calc.tax_amount_exclusive,
+          amount_cents:              calc.amount_total,
+          stripe_tax_calculation_id: calc.id,
+          stripe_tax_breakdown:      calc.tax_breakdown ?? [],
+          tax_assessed_at:           new Date().toISOString(),
+        }, env);
+        bill.tax_cents                 = calc.tax_amount_exclusive;
+        bill.amount_cents              = calc.amount_total;
+        bill.stripe_tax_calculation_id = calc.id;
+      }
+    } catch (err) {
+      // Never charge an amount whose tax could not be verified.
+      console.error(`[pay] tax calculation failed for bill ${bill.id}:`, err.message);
+      return jsonResponse({ error: 'Unable to calculate tax right now. Please try again shortly.' }, 502);
+    }
+  }
+
+  // Reuse the existing payment intent for this bill, but only if it still matches
+  // the bill. An admin can edit the amount (or the re-assessment above can move it)
+  // after the intent was created, and reusing it blindly would charge the stale amount.
   if (bill.stripe_payment_intent_id) {
-    const intent = await stripePost(
+    const intent = await stripeGet(
       `/payment_intents/${bill.stripe_payment_intent_id}`,
-      {}, env.STRIPE_SECRET_KEY
+      env.STRIPE_SECRET_KEY
     ).catch(() => null);
-    if (intent?.client_secret) {
+
+    // Terminal states can never be reused; a mid-confirmation intent must not be
+    // mutated underneath the customer.
+    const reusable = intent && ['requires_payment_method', 'requires_confirmation'].includes(intent.status);
+
+    const metadataCurrent =
+      (intent?.metadata?.tax_calculation_id ?? '') === (bill.stripe_tax_calculation_id ?? '');
+
+    if (reusable && intent.amount === bill.amount_cents && metadataCurrent) {
       return jsonResponse({ client_secret: intent.client_secret, amount: intent.amount });
     }
+    if (reusable) {
+      // Amount or calculation drifted — correct the intent in place so the client
+      // keeps its secret. The calculation id must travel with it, or the webhook
+      // could commit a superseded calculation.
+      const updated = await stripePost(
+        `/payment_intents/${intent.id}`,
+        {
+          amount: String(bill.amount_cents),
+          'metadata[tax_calculation_id]': bill.stripe_tax_calculation_id ?? '',
+        },
+        env.STRIPE_SECRET_KEY
+      ).catch(() => null);
+      if (updated?.client_secret) {
+        return jsonResponse({ client_secret: updated.client_secret, amount: updated.amount });
+      }
+    }
+    // Otherwise fall through and create a fresh intent.
   }
 
   const biz = await sbQuery('businesses', { 'id': `eq.${account.business_id}`, 'select': 'name', 'limit': '1' }, env);
@@ -753,9 +869,18 @@ async function handlePortalPay(request, env) {
     'metadata[customer_email]':     account.email,
     'metadata[business_name]':      bizName,
     'metadata[billing_month]':      bill.billing_month,
-    description:                    `DialTone — ${month} — ${bizName}`,
+    // Carried so the webhook can record the Stripe Tax transaction on success.
+    'metadata[tax_calculation_id]': bill.stripe_tax_calculation_id ?? '',
+    // Other customers contract with ByteStreams LLC, not DialTone.Menu — the charge
+    // description is what lands on their receipt, so it has to name the right entity.
+    description:                    account.product === 'other'
+      ? `ByteStreams LLC — ${bizName}`
+      : `DialTone — ${month} — ${bizName}`,
     receipt_email:                  account.email,
-  }, env.STRIPE_SECRET_KEY);
+    // Keyed on the amount as well as the bill so a legitimate re-quote after an
+    // amount change still creates a new intent, while retries of the same quote
+    // collapse onto one.
+  }, env.STRIPE_SECRET_KEY, `bill-${bill.id}-${bill.amount_cents}`);
 
   await sbUpdate('billing_schedule', bill.id, { stripe_payment_intent_id: intent.id }, env);
 
@@ -845,26 +970,87 @@ async function handlePortalRestaurant(request, env) {
   return jsonResponse({ ok: true });
 }
 
+// ── Invoice links ─────────────────────────────────────────────────────────────
+// The invoice page normally authenticates with the viewer's Supabase access token,
+// which only exists inside a live portal session and so cannot be put in an email.
+// A signed link carries its own proof instead: an expiry and an HMAC over the bill
+// id, scoped to that one invoice. Requires the INVOICE_LINK_SECRET secret; without
+// it no link is generated and the receipt email simply omits it.
+
+const INVOICE_LINK_TTL_SECONDS = 90 * 24 * 60 * 60;
+
+async function hmacHex(secret, message) {
+  const key = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Length-independent, constant-time-ish compare so a signature cannot be recovered
+// byte by byte from response timing.
+function safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function buildSignedInvoiceUrl(billId, env) {
+  if (!env.INVOICE_LINK_SECRET) {
+    console.warn('[invoice-link] INVOICE_LINK_SECRET not set — omitting invoice link from email');
+    return null;
+  }
+  const exp = Math.floor(Date.now() / 1000) + INVOICE_LINK_TTL_SECONDS;
+  const sig = await hmacHex(env.INVOICE_LINK_SECRET, `${billId}.${exp}`);
+  return `${env.SITE_URL ?? 'https://bytestreams.ai'}/api/portal/invoice/${billId}?exp=${exp}&sig=${sig}`;
+}
+
+async function verifyInvoiceSignature(billId, exp, sig, env) {
+  if (!env.INVOICE_LINK_SECRET || !exp || !sig) return false;
+  const expSeconds = Number(exp);
+  if (!Number.isFinite(expSeconds) || expSeconds * 1000 < Date.now()) return false;
+  return safeEqual(await hmacHex(env.INVOICE_LINK_SECRET, `${billId}.${exp}`), sig);
+}
+
 // ── Portal: /api/portal/invoice/:bill_id ──────────────────────────────────────
 
 async function handlePortalInvoice(request, env, url) {
-  const token = url.searchParams.get('token');
-  if (!token) return new Response('Unauthorized', { status: 401 });
-
-  // Validate JWT via Supabase
-  const authRes = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
-    headers: { 'apikey': env.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
-  });
-  if (!authRes.ok) return new Response('Unauthorized', { status: 401 });
-  const authUser = await authRes.json();
-
   const billId = url.pathname.split('/').pop();
+  const token  = url.searchParams.get('token');
+  const sig    = url.searchParams.get('sig');
+  const exp    = url.searchParams.get('exp');
 
-  // Verify bill belongs to this user's business
-  const accounts = await sbQuery('portal_accounts', {
-    'auth_user_id': `eq.${authUser.id}`, 'select': 'business_id,email', 'limit': '1'
-  }, env);
-  const account = accounts[0];
+  let account;
+  if (sig && await verifyInvoiceSignature(billId, exp, sig, env)) {
+    // A valid signature authorizes this one bill. Resolve the customer from the
+    // bill itself so the Bill To block still renders.
+    const signedBills = await sbQuery('billing_schedule', {
+      'id': `eq.${billId}`, 'select': 'business_id', 'limit': '1'
+    }, env);
+    const businessId = signedBills[0]?.business_id;
+    if (!businessId) return new Response('Not found', { status: 404 });
+    const signedAccounts = await sbQuery('portal_accounts', {
+      'business_id': `eq.${businessId}`, 'is_admin': 'eq.false', 'select': 'business_id,email', 'limit': '1'
+    }, env);
+    account = signedAccounts[0] ?? { business_id: businessId, email: '' };
+  } else if (token) {
+    // Validate JWT via Supabase
+    const authRes = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'apikey': env.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
+    });
+    if (!authRes.ok) return new Response('Unauthorized', { status: 401 });
+    const authUser = await authRes.json();
+
+    // Verify bill belongs to this user's business
+    const accounts = await sbQuery('portal_accounts', {
+      'auth_user_id': `eq.${authUser.id}`, 'select': 'business_id,email', 'limit': '1'
+    }, env);
+    account = accounts[0];
+  } else {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   if (!account) return new Response('Not found', { status: 404 });
 
   const bills = await sbQuery('billing_schedule', {
@@ -1015,12 +1201,26 @@ async function handleAdminCustomers(request, env) {
   const [, account] = await requireAdmin(request, env);
   if (!account) return jsonResponse({ error: 'Unauthorized' }, 401);
 
-  // Join portal_accounts with businesses via RPC or a manual join
-  const accounts = await sbQuery('portal_accounts', {
+  // Pull all portal accounts and normalize legacy rows where is_admin is NULL.
+  const rawAccounts = await sbQuery('portal_accounts', {
     'select': 'id,email,full_name,business_id,product,role,status,is_admin,invited_at,activated_at',
-    'is_admin': 'eq.false',
     'order': 'created_at.desc',
   }, env);
+
+  const legacyAccounts = rawAccounts.filter((a) => a.is_admin == null && a.id);
+  if (legacyAccounts.length) {
+    await Promise.all(
+      legacyAccounts.map((a) =>
+        sbUpdate('portal_accounts', a.id, { is_admin: false }, env).catch((err) => {
+          console.error(`Failed to normalize portal_accounts.is_admin for ${a.id}:`, err.message);
+        })
+      )
+    );
+  }
+
+  const accounts = rawAccounts
+    .map((a) => (a.is_admin == null ? { ...a, is_admin: false } : a))
+    .filter((a) => a.is_admin === false);
 
   // Enrich with business details
   const bizIds = [...new Set(accounts.map(a => a.business_id).filter(Boolean))];
@@ -1287,64 +1487,100 @@ async function handleAdminGenerateBilling(request, env) {
   const [, admin] = await requireAdmin(request, env);
   if (!admin) return jsonResponse({ error: 'Unauthorized' }, 401);
 
-  const created = await generateMonthlyBilling(env);
+  const created = await generateRecurringBilling(env);
   return jsonResponse({ ok: true, created });
 }
 
-async function generateMonthlyBilling(env) {
-  const now          = new Date();
-  const billingMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const dueDate      = new Date(now.getFullYear(), now.getMonth(), 15).toISOString().slice(0, 10);
+// ── Recurring billing schedule ────────────────────────────────────────────────
+// Mirrors bytestreams_info/src/lib/server/billing-cycle.ts, which carries the unit
+// tests for this arithmetic. Change both together.
+//
+// A recurring charge falls on the same day of the month as the day the customer's
+// setup fee cleared (businesses.billing_cycle_start), starting the following
+// calendar month. Months too short for the anchor day clamp to the last day, then
+// the cycle returns to the anchor day — so a 31st anchor bills Feb 28, Mar 31,
+// Apr 30. Repeated 30-day addition, which this replaces, drifted backwards instead.
 
-  const businesses = await sbQuery('businesses', { 'select': 'id,monthly_amount_cents' }, env);
-  let created = 0;
+const RECURRING_LEAD_DAYS = 5;
 
-  for (const biz of businesses) {
-    try {
-      await sbUpsert('billing_schedule', {
-        business_id:   biz.id,
-        billing_month: billingMonth,
-        due_date:      dueDate,
-        amount_cents:  biz.monthly_amount_cents,
-        status:        'pending',
-        product:       'dialtone',
-      }, 'business_id,billing_month,product', env);
-      created++;
-    } catch (err) {
-      console.error(`Billing generation failed for business ${biz.id}:`, err.message);
-    }
-  }
-  return created;
+function parseYMD(date) {
+  const [year, month, day] = String(date).slice(0, 10).split('-').map(Number);
+  return { year, month: month - 1, day };
 }
 
-async function generateRollingBilling(env) {
-  const todayStr    = new Date().toISOString().slice(0, 10);
-  const today       = new Date(todayStr + 'T12:00:00Z');
-  const businesses  = await sbQuery('businesses', {
+function daysInMonth(year, month) {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+}
+
+function billingDayIn(anchorDay, year, month) {
+  return Math.min(anchorDay, daysInMonth(year, month));
+}
+
+function isRecurringBillingDay(anchor, today) {
+  const a = parseYMD(anchor);
+  const t = parseYMD(today);
+  // Never during the anchor's own month — that month's money is the setup fee.
+  if ((t.year - a.year) * 12 + (t.month - a.month) < 1) return false;
+  return t.day === billingDayIn(a.day, t.year, t.month);
+}
+
+function upcomingBillingDate(anchor, today, windowDays) {
+  const t = parseYMD(today);
+  for (let offset = 0; offset <= windowDays; offset++) {
+    const iso = new Date(Date.UTC(t.year, t.month, t.day + offset)).toISOString().slice(0, 10);
+    if (isRecurringBillingDay(anchor, iso)) return iso;
+  }
+  return null;
+}
+
+function billingMonthFor(dueDate) {
+  return `${dueDate.slice(0, 7)}-01`;
+}
+
+/**
+ * Generates recurring DialTone.Menu charges falling within the lead window. The
+ * charge still lands on the customer's anchor day; generating it early is what
+ * gives sendUpcomingBillReminders a row to notify on in this same cron run.
+ *
+ * Upserts on (business_id, billing_month, product), so re-running — or Portal
+ * Admin's Generate button writing the same key — updates one row, never adds one.
+ */
+async function generateRecurringBilling(env) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const businesses = await sbQuery('businesses', {
     'billing_cycle_start': 'not.is.null',
-    'select': 'id,monthly_amount_cents,billing_cycle_start',
+    'business_type':       'eq.restaurant',
+    'onboarded':           'eq.true',
+    'select':              'id,monthly_amount_cents,billing_cycle_start',
   }, env);
 
   let created = 0;
   for (const biz of businesses) {
-    const cycleStart = new Date(biz.billing_cycle_start + 'T12:00:00Z');
-    const daysDiff   = Math.round((today - cycleStart) / (1000 * 60 * 60 * 24));
-    if (daysDiff <= 0 || daysDiff % 30 !== 0) continue;
+    const dueDate = upcomingBillingDate(biz.billing_cycle_start, today, RECURRING_LEAD_DAYS);
+    if (!dueDate) continue;
 
-    const dueDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const amount = Number.isInteger(biz.monthly_amount_cents) ? biz.monthly_amount_cents : 0;
+    if (amount <= 0) continue;
+
     try {
+      // Tax is left at zero here and re-assessed in handlePortalPay before the
+      // charge, so these are pre-tax figures until the customer actually pays.
       await sbUpsert('billing_schedule', {
-        business_id:   biz.id,
-        billing_month: todayStr,
-        due_date:      dueDate,
-        amount_cents:  biz.monthly_amount_cents,
-        status:        'pending',
-        product:       'dialtone',
-        bill_type:     'monthly',
+        business_id:    biz.id,
+        billing_month:  billingMonthFor(dueDate),
+        due_date:       dueDate,
+        subtotal_cents: amount,
+        tax_cents:      0,
+        amount_cents:   amount,
+        status:         'pending',
+        product:        'dialtone_menu_recurring',
+        bill_type:      'monthly',
+        description:    'DialTone.Menu — Monthly Service Fee',
       }, 'business_id,billing_month,product', env);
       created++;
     } catch (err) {
-      console.error(`Billing generation failed for business ${biz.id}:`, err.message);
+      console.error(`Recurring billing generation failed for business ${biz.id}:`, err.message);
     }
   }
   return created;
@@ -1438,8 +1674,21 @@ async function handleStripeWebhook(request, env) {
         }, env);
 
         // Record notification + send confirmation emails
-        const bills = await sbQuery('billing_schedule', { 'id': `eq.${billId}`, 'select': 'business_id,amount_cents,billing_month,bill_type,description', 'limit': '1' }, env);
+        const bills = await sbQuery('billing_schedule', { 'id': `eq.${billId}`, 'select': 'business_id,amount_cents,billing_month,bill_type,description,stripe_tax_calculation_id,stripe_tax_transaction_id', 'limit': '1' }, env);
         const paidBill = bills[0];
+
+        // Stripe Tax only counts tax toward your filing obligations once the
+        // calculation is committed as a transaction. Without this the tax is
+        // collected but never appears in Stripe Tax reporting.
+        await recordTaxTransaction({
+          billId,
+          // The bill row wins: tax is re-assessed at payment time, so the stored id
+          // is always at least as fresh as whatever the intent was created with.
+          calculationId: paidBill?.stripe_tax_calculation_id || intent.metadata?.tax_calculation_id,
+          alreadyRecorded: paidBill?.stripe_tax_transaction_id,
+          env,
+        });
+
         if (paidBill?.business_id) {
           await sbInsert('billing_notifications', {
             business_id: paidBill.business_id,
@@ -1481,6 +1730,10 @@ async function handleStripeWebhook(request, env) {
                 ? `Your setup fee of ${amtFmt} has been received. Your onboarding process is now underway — we'll be in touch shortly.`
                 : `Your payment of ${amtFmt} for ${period} has been received. Thank you!`;
 
+              // The bill is already marked paid above, so this link renders the
+              // invoice with its Paid stamp — the customer's receipt of record.
+              const invoiceUrl = await buildSignedInvoiceUrl(billId, env);
+
               if (custEmail) {
                 await fetch('https://api.resend.com/emails', {
                   method: 'POST',
@@ -1489,8 +1742,20 @@ async function handleStripeWebhook(request, env) {
                     from: 'ByteStreams <contact@send.bytestreams.ai>',
                     to:   [custEmail],
                     subject,
-                    text: `Hi ${custName},\n\n${bodyLine}\n\n— ByteStreams Team`,
-                    html: `<p>Hi ${escapeHtml(custName)},</p><p>${escapeHtml(bodyLine)}</p><p>— ByteStreams Team</p>`,
+                    text: [
+                      `Hi ${custName},`,
+                      '',
+                      bodyLine,
+                      ...(invoiceUrl ? ['', `View your paid invoice: ${invoiceUrl}`] : []),
+                      '',
+                      '— ByteStreams Team'
+                    ].join('\n'),
+                    html: [
+                      `<p>Hi ${escapeHtml(custName)},</p>`,
+                      `<p>${escapeHtml(bodyLine)}</p>`,
+                      invoiceUrl ? `<p><a href="${escapeHtml(invoiceUrl)}">View your paid invoice</a></p>` : '',
+                      `<p>— ByteStreams Team</p>`
+                    ].join(''),
                   })
                 }).catch(() => {});
               }
@@ -1529,7 +1794,131 @@ async function handleStripeWebhook(request, env) {
     }
   }
 
+  if (event.type === 'payment_intent.payment_failed') {
+    const intent = event.data.object;
+    const billId = intent.metadata?.bill_id;
+    if (billId) {
+      try {
+        // Leave the bill payable — the customer can retry from the portal. The
+        // failure is recorded so admins can see attempts that did not clear.
+        await sbUpdate('billing_schedule', billId, {
+          last_payment_error: intent.last_payment_error?.message ?? 'Payment failed',
+          last_payment_failed_at: new Date().toISOString(),
+        }, env);
+        await sbInsert('billing_notifications', {
+          business_id: intent.metadata?.business_id ?? null,
+          billing_id:  billId,
+          type:        'payment_failed',
+          channel:     'portal',
+          recipient:   intent.metadata?.customer_email ?? null,
+        }, env).catch(() => {});
+      } catch (err) {
+        console.error('Webhook payment_failed update failed:', err.message);
+      }
+    }
+  }
+
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object;
+    const billId = await resolveBillId(charge.metadata?.bill_id, charge.payment_intent, env);
+    if (billId) {
+      try {
+        const bills = await sbQuery('billing_schedule', { 'id': `eq.${billId}`, 'select': 'amount_cents,refunded_cents,stripe_tax_transaction_id', 'limit': '1' }, env);
+        const bill  = bills[0];
+        // Stripe reports cumulative refunds on the charge, so a partial refund
+        // leaves the bill paid and only a full refund reopens it.
+        const fullyRefunded = bill && charge.amount_refunded >= bill.amount_cents;
+        // Only the amount refunded since the last event is new — reversing the
+        // cumulative total again would double-reverse earlier partial refunds.
+        const newlyRefunded = charge.amount_refunded - (bill?.refunded_cents ?? 0);
+
+        await sbUpdate('billing_schedule', billId, {
+          refunded_cents: charge.amount_refunded,
+          refunded_at:    new Date().toISOString(),
+          ...(fullyRefunded ? { status: 'refunded', paid_at: null } : {}),
+        }, env);
+
+        // Tax reversals are full-only by policy. Bills are single-line-item, and
+        // Stripe recommends full reversals for that shape — partial reversals make
+        // tax reporting unreliable once the reversed tax stops being proportional
+        // to the subtotal, and they interact badly with a later full reversal
+        // (which does not supersede them, so the two double-count).
+        //
+        // A partial refund therefore reverses nothing and is flagged for manual
+        // handling instead of being silently mis-filed.
+        if (bill?.stripe_tax_transaction_id && env.STRIPE_SECRET_KEY && newlyRefunded > 0) {
+          if (!fullyRefunded) {
+            console.error(
+              `[webhook] partial refund on bill ${billId} (${charge.amount_refunded} of ` +
+              `${bill.amount_cents}) — tax NOT reversed. Partial reversals are blocked; ` +
+              `fully reverse and re-record if this refund is intended to stand.`
+            );
+            await sbUpdate('billing_schedule', billId, {
+              last_payment_error: `Partial refund of ${charge.amount_refunded} recorded; tax reversal requires manual handling`,
+            }, env).catch(() => {});
+          } else {
+            await stripePost('/tax/transactions/create_reversal', {
+              mode:                 'full',
+              original_transaction: bill.stripe_tax_transaction_id,
+              reference:            `refund-${billId}`,
+            }, env.STRIPE_SECRET_KEY, `taxrev-${billId}`)
+              .catch((err) => console.error('[webhook] tax reversal failed:', err.message));
+          }
+        }
+      } catch (err) {
+        console.error('Webhook refund update failed:', err.message);
+      }
+    }
+  }
+
+  if (event.type === 'charge.dispute.created') {
+    const dispute = event.data.object;
+    const billId  = await resolveBillId(dispute.metadata?.bill_id, dispute.payment_intent, env);
+    if (billId) {
+      try {
+        await sbUpdate('billing_schedule', billId, {
+          status:        'disputed',
+          disputed_at:   new Date().toISOString(),
+          dispute_reason: dispute.reason ?? null,
+        }, env);
+      } catch (err) {
+        console.error('Webhook dispute update failed:', err.message);
+      }
+    }
+  }
+
   return jsonResponse({ received: true });
+}
+
+// Charge and Dispute objects do not reliably carry the metadata we set on the
+// PaymentIntent, so fall back to matching the stored intent id.
+async function resolveBillId(metadataBillId, paymentIntentId, env) {
+  if (metadataBillId) return metadataBillId;
+  if (!paymentIntentId) return null;
+  const rows = await sbQuery('billing_schedule', {
+    'stripe_payment_intent_id': `eq.${paymentIntentId}`, 'select': 'id', 'limit': '1'
+  }, env).catch(() => []);
+  return rows[0]?.id ?? null;
+}
+
+// Commits a Stripe Tax calculation as a transaction once payment clears. Safe to
+// call more than once — Stripe replays on the idempotency key, and an already
+// recorded transaction short-circuits. Failures are logged, never thrown: the
+// payment itself has succeeded and must not be rolled back over a tax write.
+async function recordTaxTransaction({ billId, calculationId, alreadyRecorded, env }) {
+  if (alreadyRecorded || !calculationId || !env.STRIPE_SECRET_KEY) return;
+  try {
+    const txn = await stripePost('/tax/transactions/create_from_calculation', {
+      calculation: calculationId,
+      reference:   billId,
+    }, env.STRIPE_SECRET_KEY, `taxtxn-${billId}`);
+    await sbUpdate('billing_schedule', billId, { stripe_tax_transaction_id: txn.id }, env);
+  } catch (err) {
+    // Most common cause: the calculation expired. Stripe Tax calculations carry an
+    // `expires_at` 90 days after creation and cannot be committed past it.
+    // Surfaced in logs so the sale can be reported manually.
+    console.error(`[webhook] tax transaction failed for bill ${billId}:`, err.message);
+  }
 }
 
 // ── Email template helpers ─────────────────────────────────────────────────────
@@ -1560,6 +1949,10 @@ function buildSetupFeeEmailHtml({ fullName, dueDate, portalUrl }) {
     `<h2 style="font-size:20px;font-weight:700;margin:0 0 12px;">Welcome to ByteStreams, ${name}!</h2>`,
     `<p style="margin:0 0 16px;color:#444;">A one-time setup fee of <strong>$100.00</strong> has been applied to your account.</p>`,
     `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr style="background:#f9fafb;"><th style="text-align:left;padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Description</th><th style="text-align:right;padding:10px 14px;font-size:13px;color:#6b7280;border-bottom:1px solid #e5e7eb;">Amount</th></tr><tr><td style="padding:12px 14px;font-size:14px;">One-Time Setup Fee</td><td style="padding:12px 14px;font-size:14px;text-align:right;">$100.00</td></tr></table>`,
+    // Tax is assessed when the customer pays, not when this email is sent, so the
+    // figure above is pre-tax. Saying so keeps the email from contradicting the
+    // total shown at checkout.
+    `<p style="margin:0 0 16px;font-size:13px;color:#6b7280;">Applicable sales tax is calculated at checkout and shown before you confirm payment.</p>`,
     `<p style="margin:0 0 8px;font-size:14px;color:#444;"><strong>Due:</strong> ${escapeHtml(dueDate)}</p>`,
     `<p style="margin:0 0 24px;padding:12px 16px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;font-size:14px;color:#92400e;">Your onboarding process will begin once payment is received.</p>`,
     `<a href="${url}" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;margin-bottom:24px;">Pay in your portal</a>`,

@@ -510,9 +510,11 @@
 
   function statusBadge(status) {
     const map = {
-      paid:    ['badge-success', 'fa-circle-check',       'Paid'],
-      pending: ['badge-warning', 'fa-clock',              'Due'],
-      overdue: ['badge-error',   'fa-circle-exclamation', 'Overdue'],
+      paid:     ['badge-success', 'fa-circle-check',       'Paid'],
+      pending:  ['badge-warning', 'fa-clock',              'Due'],
+      overdue:  ['badge-error',   'fa-circle-exclamation', 'Overdue'],
+      refunded: ['badge-info',    'fa-rotate-left',        'Refunded'],
+      disputed: ['badge-error',   'fa-triangle-exclamation', 'Disputed'],
     };
     const [cls, icon, label] = map[status] ?? ['badge-info', 'fa-circle', status];
     return `<span class="badge ${cls}"><i class="fa-solid ${icon}"></i> ${label}</span>`;
@@ -733,8 +735,12 @@
     $('bill-amount').textContent  = fmtCents(bill.amount_cents);
     $('bill-status').innerHTML    = statusBadge(bill.status);
 
+    // Only these statuses are collectable. A refunded or disputed bill must not
+    // re-offer the payment form, and the server rejects such attempts anyway.
+    const payable = ['pending', 'overdue'].includes(bill.status);
+
     const setupNote = $('bill-setup-note');
-    if (bill.bill_type === 'setup' && bill.status !== 'paid') {
+    if (bill.bill_type === 'setup' && payable) {
       setupNote.classList.remove('hidden');
     } else {
       setupNote.classList.add('hidden');
@@ -742,7 +748,7 @@
 
     $('bill-content').classList.remove('hidden');
 
-    if (bill.status !== 'paid') initPayment(bill);
+    if (payable) initPayment(bill);
   }
 
   function renderHistory(rows) {

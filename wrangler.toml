@@ -30,7 +30,7 @@ SUPABASE_URL      = "https://mxhyvvgjtqllohpvrwon.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14aHl2dmdqdHFsbG9ocHZyd29uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5ODUxNTQsImV4cCI6MjA5MzU2MTE1NH0.ripE2vCVq_SGDCIjMpW2tBnvVZVNRT78mDWYzgaOx80"
 
 # Stripe publishable key — safe to commit (pk_live_... or pk_test_...)
-STRIPE_PUBLISHABLE_KEY = "pk_test_51TUZtORrmddnOdHkrUR2E2FSE00Z4FD0n5is4aGTeIdfB8hdFcg9UcFn33sEJITrKrEkUWR1RuHcBk13LvceCdAb00g41bVj85"
+STRIPE_PUBLISHABLE_KEY = "pk_live_51TPSsg2KmwBSXLwCNSiNQO7lGGbawvkZRUVLAg7u3TaVeH7q2lCaEBisbziPwDLqtbVdqNSQLsYiPagvVugkYpVa00z3zmCtOB"
 
 # Required secret (not stored in this file): RESEND_API_KEY
 # The `/api/contact` handler uses this to authenticate with Resend's
@@ -72,10 +72,17 @@ run_worker_first = [
   "/api/*"
 ]
 
-# Cron: generate monthly billing records at 08:00 UTC on the 1st of each month
+# Cron: 08:00 UTC daily. Generates recurring DialTone.Menu charges falling within
+# the next 5 days, then emails the payment reminders for bills due in 5 days —
+# generation first, so a bill created this run is notified in the same run.
 [triggers]
 crons = ["0 8 * * *"]
 
+# INVOICE_LINK_SECRET signs the emailed invoice links (HMAC-SHA256 over bill id +
+# expiry, 90-day TTL). Any long random string; rotating it invalidates links already
+# sent. If unset, receipt emails simply omit the invoice link — nothing else breaks.
+#   npx wrangler secret put INVOICE_LINK_SECRET
+#
 # Required secrets — never commit values; set via:
 #   npx wrangler secret put RESEND_API_KEY
 #   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
