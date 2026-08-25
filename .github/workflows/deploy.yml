@@ -70,6 +70,9 @@ jobs:
           # Strip sourcemaps from production (optional — remove if you want them)
           find public/dist -name '*.map' -delete || true
 
+      - name: Build blog (Eleventy)
+        run: npm run blog:build
+
       - name: Deploy to Cloudflare Workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

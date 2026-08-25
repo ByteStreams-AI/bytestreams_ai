@@ -33,6 +33,8 @@
     <meta property="og:type"        content="website">
     <meta property="og:url"         content="https://bytestreams.ai/">
     <meta property="og:image"       content="https://bytestreams.ai/assets/og-image.png">
+    <meta property="og:image:width"  content="1200">
+    <meta property="og:image:height" content="630">
 
     <!-- Twitter Card -->
     <meta name="twitter:card"        content="summary_large_image">
@@ -62,6 +64,56 @@
       }
     }
     </script>
+
+    <!-- JSON-LD: FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What does ByteStreams do?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ByteStreams is an engineering studio that builds AI-native products and takes on select client engagements in AI/LLM integration, data engineering, and cloud architecture. Our products include DialTone (voice AI for restaurants and healthcare), StratifyAI (unified LLM framework), AIphaWatch (financial intelligence), and SupplyFlow (supply chain automation)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What industries does ByteStreams work with?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ByteStreams has deep production experience in healthcare, pharmaceutical research, medical devices, and large-scale data platforms. We have shipped systems for Sterling Pharma, Stryker Medical, Sonafi clinical research, Wright Medical, and Accredo Health, among others."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What AI and LLM services does ByteStreams offer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ByteStreams builds RAG pipelines, LangGraph agentic workflows, multi-provider LLM orchestration, vector retrieval systems, MCP-based automation, and real-time data streaming architectures. We work with AWS Bedrock, LangChain, PyTorch, Kafka, Flink, Spark, and other production-grade tools."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What products does ByteStreams build?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ByteStreams ships DialTone (voice AI for restaurants and healthcare practices), StratifyAI (a unified Python framework for 9+ LLM providers with built-in RAG and MCP support), AIphaWatch (AI-generated financial intelligence), SupplyFlow (AI supply chain automation), and Semantic Search (production-grade vector search)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I work with ByteStreams?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Contact ByteStreams at hello@bytestreams.ai or by phone at +1 629-250-1143. We take on a small number of client engagements where our expertise in AI integration, data engineering, and cloud architecture is a direct fit."
+          }
+        }
+      ]
+    }
+    </script>
 </head>
 <body data-theme="dark">
     <!-- ============== Header ============== -->
@@ -79,6 +131,7 @@
                     <li><a href="#home"     class="header__nav-link is-active">Home</a></li>
                     <li><a href="#features" class="header__nav-link">Features</a></li>
                     <li><a href="#about"    class="header__nav-link">About</a></li>
+                    <li><a href="tools.html" class="header__nav-link">Tools</a></li>
                     <li><a href="/blog/"    class="header__nav-link">Blog</a></li>
                     <li><a href="#contact"  class="header__nav-link">Contact</a></li>
                     <li><a href="/portal.html" class="header__nav-link">Customers</a></li>
@@ -369,9 +422,10 @@ US</p>
                     <div class="footer__site-row">
                         <p class="footer__site-label">Product</p>
                         <ul class="footer__site-links">
+                            <li><a href="tools.html" class="footer__link">Products &amp; Tools</a></li>
                             <li><a href="https://dialtone.menu" class="footer__link">DialTone.menu</a></li>
                             <li><a href="#" class="footer__link">DialTone.med (coming soon)</a></li>
-                            <li><a href="#features" class="footer__link">Features</a></li>
+                            <li><a href="#" class="footer__link">SupplyFlow (coming soon)</a></li>
                         </ul>
                     </div>
 
