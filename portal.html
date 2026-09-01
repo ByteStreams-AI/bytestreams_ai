@@ -174,7 +174,9 @@
       display: flex; align-items: center; justify-content: center;
     }
     .biz-logo         { width: 100%; height: 100%; object-fit: cover; }
-    .biz-logo-icon    { font-size: 26px; color: var(--faded); }
+    /* The ByteStreams mark is a tall stacked lockup, so it is fitted whole
+       rather than cropped like a customer-uploaded square logo. */
+    .biz-logo--fallback { object-fit: contain; padding: 8px; }
     .biz-name         { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
 
     /* ── Info cards ──────────────────────────────────────────────────── */
@@ -335,8 +337,7 @@
     <!-- Business banner -->
     <div class="business-banner">
       <div class="biz-logo-wrap">
-        <img id="biz-logo" src="" alt="" class="biz-logo hidden">
-        <span id="biz-logo-icon" class="biz-logo-icon"><i class="fa-solid fa-utensils"></i></span>
+        <img id="biz-logo" src="/assets/green-stacked-logo.png" alt="ByteStreams" class="biz-logo biz-logo--fallback">
       </div>
       <div>
         <h1 id="biz-name" class="biz-name">—</h1>
@@ -344,6 +345,8 @@
         <a id="biz-menu-link" href="#" target="_blank" rel="noopener" class="hidden" style="font-size:0.8rem;color:var(--stream-blue);">View menu ↗</a>
       </div>
     </div>
+
+    <div id="account-error" class="status-msg error hidden" style="margin-top:0;margin-bottom:24px"></div>
 
     <!-- Info cards -->
     <div class="cards-row">
@@ -364,7 +367,7 @@
     </div>
 
     <!-- Current bill -->
-    <div class="section-gap">
+    <div class="section-gap" id="bill-section">
       <h2 class="section-title">Current Bill</h2>
       <div class="billing-card">
         <p id="bill-loading" class="text-muted">Loading…</p>
@@ -414,7 +417,7 @@
     </div>
 
     <!-- Billing history -->
-    <div class="section-gap">
+    <div class="section-gap" id="history-section">
       <h2 class="section-title">Billing History</h2>
       <div class="billing-card" style="padding: 0; overflow: hidden;">
         <p id="history-loading" class="text-muted" style="padding:24px;">Loading…</p>
@@ -682,6 +685,15 @@
       const me   = await meRes.json();
       const hist = histRes.ok ? await histRes.json() : [];
 
+      // Without this every card renders empty and the page reads as "you have no
+      // invoice", when what actually happened is that this login has no portal
+      // account -- usually signing in with a different address than the invoice
+      // was sent to, or an account that has since been removed.
+      if (!meRes.ok || !me.account) {
+        showAccountError();
+        return;
+      }
+
       renderProfile(me);
       initRestaurantProfile(me);
       renderCurrentBill(me.current_bill);
@@ -691,19 +703,31 @@
     }
   }
 
+  function showAccountError() {
+    $('bill-section').classList.add('hidden');
+    $('history-section').classList.add('hidden');
+    const el = $('account-error');
+    el.textContent =
+      `No billing account is linked to ${session.user.email ?? 'this address'}. `
+      + 'If you were emailed an invoice, sign in with the address it was sent to, '
+      + 'or contact hello@bytestreams.ai.';
+    el.classList.remove('hidden');
+  }
+
   function renderProfile(data) {
     const { business, general_message, customer_message } = data;
     if (!business) return;
 
     $('biz-name').textContent = business.name ?? 'ByteStreams';
 
-    const logoEl = $('biz-logo');
-    const iconEl = $('biz-logo-icon');
-    const logoSrc = business.logo_url || '/assets/blue-side-slim-logo.png';
-    logoEl.src = logoSrc;
-    logoEl.alt = business.name ?? 'ByteStreams';
-    logoEl.classList.remove('hidden');
-    iconEl.classList.add('hidden');
+    // Only a logo the customer actually has replaces the ByteStreams mark the
+    // banner already shows; there is no third placeholder image.
+    if (business.logo_url) {
+      const logoEl = $('biz-logo');
+      logoEl.src = business.logo_url;
+      logoEl.alt = business.name ?? 'ByteStreams';
+      logoEl.classList.remove('biz-logo--fallback');
+    }
 
     if (business.slug) {
       const link = $('biz-menu-link');
@@ -834,8 +858,23 @@
   });
 
   // ── Stripe ─────────────────────────────────────────────────────────────────
+  // A payment that cannot be set up must say so on the page. Failing to the
+  // console leaves an outstanding bill rendered with no button and no reason,
+  // which reads as "there is no way to pay this".
+  function paymentUnavailable(message) {
+    $('payment-element').classList.add('hidden');
+    $('pay-btn').classList.add('hidden');
+    const errEl = $('payment-error');
+    errEl.textContent = `${message} Contact hello@bytestreams.ai and we will send you a payment link.`;
+    errEl.classList.remove('hidden');
+    $('payment-section').classList.remove('hidden');
+  }
+
   async function initPayment(bill) {
-    if (!STRIPE_PK) return;
+    if (!STRIPE_PK) {
+      paymentUnavailable('Online payment is temporarily unavailable.');
+      return;
+    }
     stripe = Stripe(STRIPE_PK);
 
     let clientSecret;
@@ -853,6 +892,7 @@
       clientSecret = data.client_secret;
     } catch (err) {
       console.error('Payment init:', err);
+      paymentUnavailable(err.message ?? 'Payment could not be set up.');
       return;
     }
 

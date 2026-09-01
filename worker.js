@@ -749,10 +749,6 @@ async function handlePortalBillingHistory(request, env) {
 // ── Portal: /api/portal/pay ────────────────────────────────────────────────────
 
 async function handlePortalPay(request, env) {
-  const user = await getPortalUser(request, env);
-  if (!user) return jsonResponse({ error: 'Unauthorized' }, 401);
-  if (!env.STRIPE_SECRET_KEY) return jsonResponse({ error: 'Payment unavailable' }, 503);
-
   let body;
   try { body = await request.json(); }
   catch { return jsonResponse({ error: 'Invalid body' }, 400); }
@@ -760,11 +756,22 @@ async function handlePortalPay(request, env) {
   const billId = normalizeText(body.bill_id ?? '', 100);
   if (!billId) return jsonResponse({ error: 'bill_id is required' }, 400);
 
-  const accounts = await sbQuery('portal_accounts', {
-    'auth_user_id': `eq.${user.id}`, 'select': '*', 'limit': '1'
-  }, env);
-  const account = accounts[0];
+  // Either a live portal session, or the signed link from the invoice email —
+  // which is the whole point of that link, so it has no session to offer. The
+  // signature covers this bill id alone, so it cannot pay for another bill.
+  let account;
+  if (body.sig && await verifyInvoiceSignature(billId, body.exp, body.sig, env)) {
+    account = await accountForSignedBill(billId, env);
+  } else {
+    const user = await getPortalUser(request, env);
+    if (!user) return jsonResponse({ error: 'Unauthorized' }, 401);
+    const accounts = await sbQuery('portal_accounts', {
+      'auth_user_id': `eq.${user.id}`, 'select': '*', 'limit': '1'
+    }, env);
+    account = accounts[0];
+  }
   if (!account) return jsonResponse({ error: 'Account not found' }, 404);
+  if (!env.STRIPE_SECRET_KEY) return jsonResponse({ error: 'Payment unavailable' }, 503);
 
   const bills = await sbQuery('billing_schedule', {
     'id': `eq.${billId}`, 'business_id': `eq.${account.business_id}`, 'select': '*', 'limit': '1'
@@ -1007,6 +1014,22 @@ async function buildSignedInvoiceUrl(billId, env) {
   return `${env.SITE_URL ?? 'https://bytestreams.ai'}/api/portal/invoice/${billId}?exp=${exp}&sig=${sig}`;
 }
 
+// A valid signature authorizes exactly one bill. The customer is resolved from
+// the bill itself, because a signed link carries no session to resolve them from.
+async function accountForSignedBill(billId, env) {
+  const bills = await sbQuery('billing_schedule', {
+    'id': `eq.${billId}`, 'select': 'business_id', 'limit': '1'
+  }, env);
+  const businessId = bills[0]?.business_id;
+  if (!businessId) return null;
+
+  const accounts = await sbQuery('portal_accounts', {
+    'business_id': `eq.${businessId}`, 'is_admin': 'eq.false',
+    'select': 'business_id,email,product', 'limit': '1'
+  }, env);
+  return accounts[0] ?? { business_id: businessId, email: '', product: null };
+}
+
 async function verifyInvoiceSignature(billId, exp, sig, env) {
   if (!env.INVOICE_LINK_SECRET || !exp || !sig) return false;
   const expSeconds = Number(exp);
@@ -1024,17 +1047,8 @@ async function handlePortalInvoice(request, env, url) {
 
   let account;
   if (sig && await verifyInvoiceSignature(billId, exp, sig, env)) {
-    // A valid signature authorizes this one bill. Resolve the customer from the
-    // bill itself so the Bill To block still renders.
-    const signedBills = await sbQuery('billing_schedule', {
-      'id': `eq.${billId}`, 'select': 'business_id', 'limit': '1'
-    }, env);
-    const businessId = signedBills[0]?.business_id;
-    if (!businessId) return new Response('Not found', { status: 404 });
-    const signedAccounts = await sbQuery('portal_accounts', {
-      'business_id': `eq.${businessId}`, 'is_admin': 'eq.false', 'select': 'business_id,email', 'limit': '1'
-    }, env);
-    account = signedAccounts[0] ?? { business_id: businessId, email: '' };
+    account = await accountForSignedBill(billId, env);
+    if (!account) return new Response('Not found', { status: 404 });
   } else if (token) {
     // Validate JWT via Supabase
     const authRes = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
@@ -1085,6 +1099,9 @@ async function handlePortalInvoice(request, env, url) {
   const paidDate    = bill.paid_at ? new Date(bill.paid_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
   const amountFmt   = (bill.amount_cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   const isPaid      = bill.status === 'paid';
+  // Allowlist, matching handlePortalPay: a refunded or disputed bill is not
+  // collectable, and neither is any status added later without review.
+  const payable     = ['pending', 'overdue'].includes(bill.status) && Boolean(env.STRIPE_PUBLISHABLE_KEY);
 
   const siteUrl = env.SITE_URL ?? 'https://bytestreams.ai';
 
@@ -1119,6 +1136,17 @@ async function handlePortalInvoice(request, env, url) {
   .status-paid{background:#d1fae5;color:#065f46}
   .status-pending{background:#fef3c7;color:#92400e}
   .footer{margin-top:40px;padding-top:24px;border-top:1px solid #e5e7eb;font-size:0.8rem;color:#9ca3af;text-align:center}
+  .pay-box{border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:32px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+  .pay-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+  .pay-head span{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6b7280}
+  .pay-head strong{font-size:1.5rem;color:#111}
+  .pay-btn{width:100%;margin-top:18px;background:#2563eb;color:#fff;border:none;padding:14px 24px;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer}
+  .pay-btn:disabled{opacity:0.6;cursor:default}
+  .pay-msg{padding:12px 16px;border-radius:8px;font-size:0.875rem;margin-top:14px}
+  .pay-msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  .pay-msg.success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+  .pay-note{font-size:0.75rem;color:#9ca3af;margin-top:12px;text-align:center}
+  .hidden{display:none}
   @media print{
     body{padding:20px}
     .no-print{display:none}
@@ -1181,8 +1209,17 @@ async function handlePortalInvoice(request, env, url) {
 ${bill.bill_type === 'setup' && !isPaid ? `<p style="font-size:0.875rem;color:#92400e;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:24px;">Onboarding begins upon receipt of payment. We'll be in touch shortly after your setup fee is cleared.</p>` : ''}
 ${bill.stripe_payment_intent_id ? `<p style="font-size:0.8rem;color:#9ca3af;margin-bottom:32px">Payment ref: ${bill.stripe_payment_intent_id}</p>` : ''}
 
+${payable ? `<div class="pay-box no-print" id="pay-box">
+  <div class="pay-head"><span>Amount due</span><strong>${amountFmt}</strong></div>
+  <div id="payment-element"></div>
+  <div id="pay-error" class="pay-msg error hidden"></div>
+  <button id="pay-btn" class="pay-btn">Pay ${amountFmt}</button>
+  <p class="pay-note">Secure payment by Stripe. Card details go straight to Stripe and never reach our servers.</p>
+</div>` : ''}
+<div id="pay-success" class="pay-msg success no-print hidden" style="margin-bottom:32px">Payment received — thank you! A receipt is on its way to your inbox.</div>
+
 <div class="no-print" style="margin-bottom:32px">
-  <button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer">
+  <button onclick="window.print()" style="background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;padding:10px 24px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer">
     Save as PDF / Print
   </button>
 </div>
@@ -1190,6 +1227,77 @@ ${bill.stripe_payment_intent_id ? `<p style="font-size:0.8rem;color:#9ca3af;marg
 <div class="footer">
   ByteStreams LLC · Nashville, TN · hello@bytestreams.ai · bytestreams.ai
 </div>
+${payable ? `<script src="https://js.stripe.com/v3/"></script>
+<script>
+(function () {
+  var PK = ${JSON.stringify(env.STRIPE_PUBLISHABLE_KEY ?? '')};
+  var params  = new URLSearchParams(location.search);
+  var billId  = location.pathname.split('/').pop();
+  var box     = document.getElementById('pay-box');
+  var errEl   = document.getElementById('pay-error');
+  var btn     = document.getElementById('pay-btn');
+  var okEl    = document.getElementById('pay-success');
+
+  // Returning from a redirect-based method: Stripe appends the outcome, and the
+  // webhook marks the bill paid, so just say so rather than re-offering payment.
+  if (params.get('redirect_status') === 'succeeded') {
+    box.classList.add('hidden');
+    okEl.classList.remove('hidden');
+    return;
+  }
+
+  function fail(msg) {
+    box.querySelector('#payment-element').classList.add('hidden');
+    btn.classList.add('hidden');
+    errEl.textContent = msg + ' Contact hello@bytestreams.ai and we will send you another way to pay.';
+    errEl.classList.remove('hidden');
+  }
+
+  var stripe = Stripe(PK);
+  var elements;
+
+  // The same credentials that authorized this page authorize the charge: the
+  // signed link's exp+sig, or a portal session token.
+  var headers = { 'Content-Type': 'application/json' };
+  var token = params.get('token');
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  fetch('/api/portal/pay', {
+    method: 'POST',
+    headers: headers,
+    body: JSON.stringify({ bill_id: billId, exp: params.get('exp'), sig: params.get('sig') })
+  })
+    .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'Payment setup failed.'); return d; }); })
+    .then(function (d) {
+      elements = stripe.elements({ clientSecret: d.client_secret, appearance: { theme: 'stripe', variables: { colorPrimary: '#2563eb', borderRadius: '8px' } } });
+      elements.create('payment').mount('#payment-element');
+    })
+    .catch(function (e) { fail(e.message || 'Payment could not be set up.'); });
+
+  btn.addEventListener('click', function () {
+    if (!elements) return;
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+    errEl.classList.add('hidden');
+
+    stripe.confirmPayment({
+      elements: elements,
+      confirmParams: { return_url: location.href },
+      redirect: 'if_required'
+    }).then(function (res) {
+      if (res.error) {
+        errEl.textContent = res.error.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Try again';
+        return;
+      }
+      box.classList.add('hidden');
+      okEl.classList.remove('hidden');
+    });
+  });
+})();
+<\/script>` : ''}
 </body>
 </html>`;
 
@@ -1607,16 +1715,21 @@ async function sendUpcomingBillReminders(env) {
       const amtFmt    = `$${(bill.amount_cents / 100).toFixed(2)}`;
       const lineItem  = bill.description || (bill.bill_type === 'setup' ? 'Setup Fee' : bill.bill_type === 'addon' ? 'Add-On Fee' : 'Monthly Service');
       const dueFmt    = new Date(bill.due_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const portalUrl = `${env.SITE_URL ?? 'https://bytestreams.ai'}/portal.html`;
+
+      // Same one-click link the new-customer invoice sends: opens this invoice
+      // and takes payment, no sign-in. Falls back to the portal when the secret
+      // is missing, which is the behaviour this email had before.
+      const payUrl = (await buildSignedInvoiceUrl(bill.id, env))
+        ?? `${env.SITE_URL ?? 'https://bytestreams.ai'}/portal`;
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'authorization': `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
         body: JSON.stringify({
           from:    'ByteStreams <contact@send.bytestreams.ai>',
           to:      [custEmail],
-          subject: `Payment Reminder — ${lineItem} due ${dueFmt}`,
-          text:    `Hi ${custName},\n\nA reminder that your ${lineItem} of ${amtFmt} for ${bizName} is due on ${dueFmt}.\n\nPay securely: ${portalUrl}\n\n— ByteStreams Team`,
-          html:    `<p>Hi ${escapeHtml(custName)},</p><p>A reminder that your <strong>${escapeHtml(lineItem)}</strong> of <strong>${escapeHtml(amtFmt)}</strong> is due on <strong>${escapeHtml(dueFmt)}</strong>.</p><p><a href="${escapeHtml(portalUrl)}">Pay securely in your portal</a></p><p>— ByteStreams Team</p>`,
+          subject: `Invoice — ${lineItem} of ${amtFmt} due ${dueFmt}`,
+          text:    `Hi ${custName},\n\nYour ${lineItem} of ${amtFmt} for ${bizName} is due on ${dueFmt}.\n\nView and pay your invoice: ${payUrl}\n\n— ByteStreams Team`,
+          html:    `<p>Hi ${escapeHtml(custName)},</p><p>Your <strong>${escapeHtml(lineItem)}</strong> of <strong>${escapeHtml(amtFmt)}</strong> for ${escapeHtml(bizName)} is due on <strong>${escapeHtml(dueFmt)}</strong>.</p><p><a href="${escapeHtml(payUrl)}">View and pay your invoice</a></p><p>— ByteStreams Team</p>`,
         })
       }).catch(() => {});
     } catch (err) {
