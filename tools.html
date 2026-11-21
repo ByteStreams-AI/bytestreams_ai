@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ByteStreams SaaS products and developer tools — DialTone, SupplyFlow, StratifyAI, Semantic Search, and AIphaWatch. AI-native software engineered for production.">
+    <meta name="description" content="ByteStreams SaaS products and developer tools — DialTone, AuthPulse, SupplyFlow, StratifyAI, and Semantic Search. AI-native software engineered for production.">
     <meta name="theme-color" content="#0D1117">
     <title>Products &amp; Tools &mdash; ByteStreams</title>
 
@@ -25,11 +25,11 @@
     <link rel="canonical" href="https://bytestreams.ai/tools.html">
 
     <!-- Keywords -->
-    <meta name="keywords" content="ByteStreams products, DialTone voice AI, StratifyAI LLM framework, AIphaWatch financial intelligence, SupplyFlow supply chain, semantic search tool, AI SaaS products">
+    <meta name="keywords" content="ByteStreams products, DialTone voice AI, StratifyAI LLM framework, AuthPulse prior authorization tracker, SupplyFlow supply chain, semantic search tool, AI SaaS products">
 
     <!-- Open Graph -->
     <meta property="og:title"       content="Products &amp; Tools — ByteStreams">
-    <meta property="og:description" content="ByteStreams SaaS products and developer tools — DialTone, SupplyFlow, StratifyAI, Semantic Search, and AIphaWatch. AI-native software engineered for production.">
+    <meta property="og:description" content="ByteStreams SaaS products and developer tools — DialTone, AuthPulse, SupplyFlow, StratifyAI, and Semantic Search. AI-native software engineered for production.">
     <meta property="og:type"        content="website">
     <meta property="og:url"         content="https://bytestreams.ai/tools.html">
     <meta property="og:image"       content="https://bytestreams.ai/assets/og-image.png">
@@ -40,7 +40,7 @@
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:site"        content="@byte_streams">
     <meta name="twitter:title"       content="Products &amp; Tools — ByteStreams">
-    <meta name="twitter:description" content="ByteStreams SaaS products and developer tools — DialTone, SupplyFlow, StratifyAI, Semantic Search, and AIphaWatch.">
+    <meta name="twitter:description" content="ByteStreams SaaS products and developer tools — DialTone, AuthPulse, SupplyFlow, StratifyAI, and Semantic Search.">
     <meta name="twitter:image"       content="https://bytestreams.ai/assets/og-image.png">
 
     <!-- JSON-LD: SoftwareApplication collection -->
@@ -56,6 +56,29 @@
           "position": 1,
           "item": {
             "@type": "SoftwareApplication",
+            "name": "DialTone.med",
+            "applicationCategory": "HealthApplication",
+            "description": "AI voice automation for medical practice front desks — scheduling, triage routing, and after-hours coverage.",
+            "operatingSystem": "Web"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "SoftwareApplication",
+            "name": "AuthPulse",
+            "applicationCategory": "HealthApplication",
+            "description": "A prior authorization tracker for medical practices: every request, when each plan's answer is due, and flags for late, expiring and unexplained denials. Early access.",
+            "url": "https://dialtone.med/authpulse",
+            "operatingSystem": "Web"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "SoftwareApplication",
             "name": "DialTone.menu",
             "applicationCategory": "BusinessApplication",
             "description": "AI-powered voice ordering and front-of-house automation for restaurants.",
@@ -65,18 +88,7 @@
         },
         {
           "@type": "ListItem",
-          "position": 2,
-          "item": {
-            "@type": "SoftwareApplication",
-            "name": "DialTone.med",
-            "applicationCategory": "HealthApplication",
-            "description": "AI voice automation for medical practice front desks — scheduling, triage routing, and after-hours coverage.",
-            "operatingSystem": "Web"
-          }
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
+          "position": 4,
           "item": {
             "@type": "SoftwareApplication",
             "name": "SupplyFlow",
@@ -87,7 +99,7 @@
         },
         {
           "@type": "ListItem",
-          "position": 4,
+          "position": 5,
           "item": {
             "@type": "SoftwareApplication",
             "name": "StratifyAI",
@@ -98,23 +110,12 @@
         },
         {
           "@type": "ListItem",
-          "position": 5,
+          "position": 6,
           "item": {
             "@type": "SoftwareApplication",
             "name": "Semantic Search",
             "applicationCategory": "DeveloperApplication",
             "description": "AI-powered semantic and vector search — production-grade relevance without the infrastructure overhead.",
-            "operatingSystem": "Web"
-          }
-        },
-        {
-          "@type": "ListItem",
-          "position": 6,
-          "item": {
-            "@type": "SoftwareApplication",
-            "name": "AIphaWatch",
-            "applicationCategory": "FinanceApplication",
-            "description": "AI-generated financial intelligence briefs delivered as a multi-tenant SaaS service.",
             "operatingSystem": "Web"
           }
         }
@@ -181,6 +182,59 @@
 
                     <div class="product-grid">
 
+                        <!-- DialTone.med -->
+                        <article class="product-card">
+                            <span class="product-card__status product-card__status--live">
+                                <i class="fa-solid fa-circle" style="font-size:6px;" aria-hidden="true"></i>
+                                Live
+                            </span>
+                            <div class="product-card__icon" style="color:#10B981;">
+                                <i class="fa-solid fa-stethoscope" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">DialTone.med</h3>
+                            <p class="product-card__tagline">Voice AI for medical practices that need to protect every patient call.</p>
+                            <p class="product-card__description">
+                                AI voice automation for medical practice front desks. Handles scheduling,
+                                triage routing, prescription refill requests, and after-hours coverage &mdash;
+                                with HIPAA-conscious design and the same production-grade voice stack powering
+                                DialTone.menu.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="https://dialtone.med" class="btn btn--primary btn--sm"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Visit Site <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </article>
+
+                        <!-- AuthPulse -->
+                        <article class="product-card">
+                            <span class="product-card__status product-card__status--soon">
+                                <i class="fa-solid fa-clock" style="font-size:8px;" aria-hidden="true"></i>
+                                Early Access
+                            </span>
+                            <div class="product-card__icon" style="color:#14B8A6;">
+                                <i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">AuthPulse</h3>
+                            <p class="product-card__tagline">Every prior auth, on the clock.</p>
+                            <p class="product-card__description">
+                                A prior authorization tracker for medical practices. Every request in one list,
+                                when each plan's answer is due, and flags for late, expiring, and unexplained
+                                denials. Runs on its own, with the DialTone.med voice agent, or delivered
+                                in-house for your organization through ByteStreams consulting.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="https://dialtone.med/authpulse" class="btn btn--primary btn--sm"
+                                   target="_blank" rel="noopener noreferrer">
+                                    Learn More <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                </a>
+                                <a href="index.html#contact" class="btn btn--ghost btn--sm">
+                                    Talk to Us
+                                </a>
+                            </div>
+                        </article>
+
                         <!-- DialTone.menu -->
                         <article class="product-card">
                             <span class="product-card__status product-card__status--live">
@@ -202,30 +256,6 @@
                                 <a href="https://dialtone.menu" class="btn btn--primary btn--sm"
                                    target="_blank" rel="noopener noreferrer">
                                     Visit Site <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                        </article>
-
-                        <!-- DialTone.med -->
-                        <article class="product-card product-card--muted">
-                            <span class="product-card__status product-card__status--soon">
-                                <i class="fa-solid fa-clock" style="font-size:8px;" aria-hidden="true"></i>
-                                Coming Soon
-                            </span>
-                            <div class="product-card__icon" style="color:#10B981;">
-                                <i class="fa-solid fa-stethoscope" aria-hidden="true"></i>
-                            </div>
-                            <h3 class="product-card__name">DialTone.med</h3>
-                            <p class="product-card__tagline">Voice AI for medical practices that need to protect every patient call.</p>
-                            <p class="product-card__description">
-                                AI voice automation for medical practice front desks. Handles scheduling,
-                                triage routing, prescription refill requests, and after-hours coverage &mdash;
-                                with HIPAA-conscious design and the same production-grade voice stack powering
-                                DialTone.menu.
-                            </p>
-                            <div class="product-card__actions">
-                                <a href="index.html#contact" class="btn btn--ghost btn--sm">
-                                    Get Notified
                                 </a>
                             </div>
                         </article>
@@ -315,29 +345,6 @@
                             </div>
                         </article>
 
-                        <!-- AIphaWatch -->
-                        <article class="product-card">
-                            <span class="product-card__status product-card__status--live">
-                                <i class="fa-solid fa-circle" style="font-size:6px;" aria-hidden="true"></i>
-                                Live
-                            </span>
-                            <div class="product-card__icon" style="color:#F59E0B;">
-                                <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-                            </div>
-                            <h3 class="product-card__name">AIphaWatch</h3>
-                            <p class="product-card__tagline">AI-generated financial intelligence, as a service.</p>
-                            <p class="product-card__description">
-                                A multi-tenant SaaS platform that produces AI-generated financial intelligence
-                                briefs using LangGraph, Amazon Bedrock, and a production-grade Python stack.
-                                Delivers timely, structured market and company intelligence to subscribers &mdash;
-                                without the analyst overhead.
-                            </p>
-                            <div class="product-card__actions">
-                                <a href="index.html#contact" class="btn btn--primary btn--sm">
-                                    Learn More <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                        </article>
 
                     </div>
                 </div>
