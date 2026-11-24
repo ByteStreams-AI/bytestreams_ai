@@ -48,13 +48,8 @@ eleventyExcludeFromCollections: true
                     <h2 class="post-card__title">
                         <a href="{{ study.url }}" class="post-card__link">{{ study.data.headline or study.data.title }}</a>
                     </h2>
-                    <p class="post-card__excerpt">{{ study.data.summary or study.data.description }}</p>
+                    <p class="post-card__excerpt">{{ study.data.description }}</p>
                     <div class="post-card__footer">
-                        {% if study.data.metrics and study.data.metrics.length %}
-                        <span class="post-card__read-time">
-                            <strong>{{ study.data.metrics[0].value }}</strong> {{ study.data.metrics[0].label }}
-                        </span>
-                        {% endif %}
                         <a href="{{ study.url }}" class="post-card__cta" aria-label="Read case study: {{ study.data.headline or study.data.title }}">
                             Read case study <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
