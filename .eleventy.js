@@ -29,6 +29,19 @@ module.exports = function (eleventyConfig) {
     return api.getFilteredByTag("posts").reverse();
   });
 
+  // "caseStudies" collection — src/case-studies/*.md, newest first
+  eleventyConfig.addCollection("caseStudies", function (api) {
+    return api.getFilteredByTag("caseStudies").reverse();
+  });
+
+  // `draft: true` pages render under `eleventy --serve` but are skipped by
+  // production builds, so unfinished content never ships.
+  eleventyConfig.addPreprocessor("drafts", "*", function (data) {
+    if (data.draft && process.env.ELEVENTY_RUN_MODE === "build") {
+      return false;
+    }
+  });
+
   return {
     dir: {
       input: "src",

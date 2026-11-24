@@ -339,3 +339,96 @@
   padding: 3px $space-sm;
   border-radius: $radius-full;
 }
+
+// ---- Case studies (reuse .blog-post shell) -------------------------------
+.case-study {
+  &__summary {
+    font-size: $font-size-h4;
+    color: var(--text-muted);
+    margin: $space-md 0 0;
+  }
+
+  &__facts {
+    display: grid;
+    gap: $space-sm;
+    margin: $space-lg 0 0;
+    font-size: $font-size-small;
+
+    div {
+      display: flex;
+      gap: $space-sm;
+    }
+
+    dt {
+      min-width: 72px;
+      color: var(--text-muted);
+      font-weight: $weight-medium;
+    }
+
+    dd {
+      margin: 0;
+      color: var(--text);
+    }
+  }
+
+  &__metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: $space-md;
+    margin: $space-xl 0;
+
+    // Four metrics read better as 2×2 than 3 + 1
+    &:has(> :nth-child(4):last-child) {
+      grid-template-columns: repeat(2, 1fr);
+
+      @include mobile {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      min-height: 0;
+    }
+  }
+
+  &__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-md;
+
+    p {
+      flex-basis: 100%;
+      margin: 0;
+      color: var(--text-muted);
+    }
+  }
+}
+
+// ---- Tables in post / case-study bodies ----------------------------------
+.blog-post__body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: $space-lg 0;
+  font-size: $font-size-small;
+  display: block;
+  overflow-x: auto;
+
+  th,
+  td {
+    padding: $space-sm $space-md;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    color: var(--text);
+    font-weight: $weight-semi;
+    background: var(--surface);
+  }
+
+  td:first-child {
+    color: var(--text);
+  }
+}
