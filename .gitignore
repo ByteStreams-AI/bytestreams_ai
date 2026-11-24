@@ -17,3 +17,7 @@ public/
 
 # Local environment variables — never commit
 .env
+
+# Internal strategy docs (pricing, competitor notes) — repo is public
+docs/AI_Services.md
+docs/Healthcare_Consulting_Offerings_for_2027.md

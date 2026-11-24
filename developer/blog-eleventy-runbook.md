@@ -1,20 +1,20 @@
 # ByteStreams Blog — Eleventy Integration Runbook
 
-> **Stack:** Static HTML + Sass + Cloudflare Workers  
-> **Tool added:** Eleventy (11ty) v3 — manages `/blog/` only; existing pages untouched  
+> **Stack:** Static HTML + Sass + Cloudflare Workers
+> **Tool added:** Eleventy (11ty) v3 — manages `/blog/` only; existing pages untouched
 > **Output:** Flat HTML files written to `public/blog/` — same Cloudflare deploy path
 
 ---
 
 ## Concept Glossary
 
-| Term | Meaning |
-|---|---|
-| **Eleventy** | Reads Markdown + templates → outputs flat `.html` files |
+| Term                          | Meaning                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------- |
+| **Eleventy**            | Reads Markdown + templates → outputs flat `.html` files                |
 | **Nunjucks (`.njk`)** | Template language — plain HTML with `{{ variable }}` and `{% for %}` |
-| **Frontmatter** | YAML block between `---` lines at the top of every Markdown post |
-| **Layout** | Reusable HTML shell (header + footer) wrapping post content |
-| **Collection** | Group of posts Eleventy builds from a tag — ours is called `posts` |
+| **Frontmatter**         | YAML block between `---` lines at the top of every Markdown post        |
+| **Layout**              | Reusable HTML shell (header + footer) wrapping post content               |
+| **Collection**          | Group of posts Eleventy builds from a tag — ours is called `posts`     |
 
 Eleventy runs **after** the existing build. It only adds files to `public/blog/`. It never touches `index.html` or any existing page.
 
@@ -54,6 +54,7 @@ npm install --save-dev @11ty/eleventy @11ty/eleventy-plugin-syntaxhighlight
 `eleventy-plugin-syntaxhighlight` adds Prism-powered colored code blocks — important for a technical blog.
 
 Verify:
+
 ```bash
 npx @11ty/eleventy --version
 ```
@@ -116,7 +117,7 @@ module.exports = function (eleventyConfig) {
 };
 ```
 
-**Why `output: "public"`?**  
+**Why `output: "public"`?**
 Cloudflare Workers serves from `public/`. Eleventy adds files to `public/blog/` alongside the existing pages. It does not overwrite them.
 
 ---
@@ -244,7 +245,7 @@ Nav links use absolute paths (`/#about`) since blog pages live at a different de
     </div>
     <div class="footer__bottom">
       <p class="footer__copyright">
-        &copy; 2026 ByteStreams. Smarter Workflows, Stronger Results.
+        © 2026 ByteStreams. Smarter Workflows, Stronger Results.
       </p>
       <div class="footer__social" aria-label="Social links">
         <a href="https://www.linkedin.com/company/bytestreams/" class="footer__social-link" aria-label="LinkedIn">
@@ -453,13 +454,13 @@ ogImage: "https://bytestreams.ai/assets/blog/post-og.jpg"
 Post content starts here...
 ```
 
-| Field | Required | Purpose |
-|---|---|---|
-| `title` | Yes | `<title>`, `og:title`, post `<h1>` |
-| `description` | Yes | Meta description, og:description, card excerpt |
-| `category` | No | Tag badge on card and post header (falls back to "Insights") |
-| `keywords` | No | `<meta keywords>` — 6–10 comma-separated terms |
-| `ogImage` | No | Custom social share image — falls back to `site.ogImage` |
+| Field           | Required | Purpose                                                      |
+| --------------- | -------- | ------------------------------------------------------------ |
+| `title`       | Yes      | `<title>`, `og:title`, post `<h1>`                     |
+| `description` | Yes      | Meta description, og:description, card excerpt               |
+| `category`    | No       | Tag badge on card and post header (falls back to "Insights") |
+| `keywords`    | No       | `<meta keywords>` — 6–10 comma-separated terms           |
+| `ogImage`     | No       | Custom social share image — falls back to `site.ogImage`  |
 
 The **filename date** (`2026-05-21-`) sets `page.date`. Always include it.
 
@@ -470,6 +471,7 @@ The **filename date** (`2026-05-21-`) sets `page.date`. Always include it.
 See [sass/pages/_blog.scss](../sass/pages/_blog.scss) — uses existing design tokens (`$stream-blue`, `$font-size-h4`, `$space-xl`, etc.).
 
 Registered in `sass/main.scss` with:
+
 ```scss
 @use 'pages/blog';
 ```
@@ -526,10 +528,10 @@ Request Indexing.
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---|---|
-| `Error: Cannot find module '.eleventy.js'` | Run all commands from project root |
-| CSS not loading on blog pages | CSS path must be `/dist/css/main.css` (absolute), not relative |
-| Posts not showing on listing page | Check `tags: posts` is in `src/posts/posts.json` |
-| Date showing as `Invalid Date` | Filename must start with `YYYY-MM-DD-` |
-| Eleventy overwrites `index.html` | It won't — it only processes files inside `src/` |
+| Symptom                                      | Fix                                                              |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| `Error: Cannot find module '.eleventy.js'` | Run all commands from project root                               |
+| CSS not loading on blog pages                | CSS path must be `/dist/css/main.css` (absolute), not relative |
+| Posts not showing on listing page            | Check `tags: posts` is in `src/posts/posts.json`             |
+| Date showing as `Invalid Date`             | Filename must start with `YYYY-MM-DD-`                         |
+| Eleventy overwrites `index.html`           | It won't — it only processes files inside `src/`              |
