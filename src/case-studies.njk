@@ -1,0 +1,69 @@
+---
+title: "Case Studies: Production AI & Data Engineering | ByteStreams"
+description: "Case studies from ByteStreams: production AI and data engineering for healthcare organizations and growing companies, with the problem, approach and results."
+keywords: "AI case studies, data engineering case study, healthcare AI case study, data platform modernization, production AI systems, ByteStreams"
+# Paginating over the collection means this page is only built once at least
+# one non-draft case study exists — no empty index ever ships.
+pagination:
+  data: collections.caseStudies
+  size: 50
+  alias: studies
+permalink: "/case-studies/"
+eleventyExcludeFromCollections: true
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>{% include "head.njk" %}</head>
+<body data-theme="dark">
+
+{% include "header.njk" %}
+
+<main id="main">
+
+    <section class="blog-hero">
+        <div class="blog-hero__container">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol class="breadcrumb__list">
+                    <li class="breadcrumb__item"><a href="/" class="breadcrumb__link">Home</a></li>
+                    <li class="breadcrumb__item" aria-current="page">Case Studies</li>
+                </ol>
+            </nav>
+            <h1 class="blog-hero__title">Case Studies</h1>
+            <p class="blog-hero__subtitle">
+                Production AI and data engineering case studies: the problem, how we built it, and what changed.
+            </p>
+        </div>
+    </section>
+
+    <section class="blog-listing section">
+        <div class="section__container">
+            <div class="blog-grid">
+                {% for study in studies %}
+                <article class="post-card">
+                    <div class="post-card__meta">
+                        {% if study.data.industry %}
+                        <span class="post-card__tag">{{ study.data.industry }}</span>
+                        {% endif %}
+                    </div>
+                    <h2 class="post-card__title">
+                        <a href="{{ study.url }}" class="post-card__link">{{ study.data.headline or study.data.title }}</a>
+                    </h2>
+                    <p class="post-card__excerpt">{{ study.data.description }}</p>
+                    <div class="post-card__footer">
+                        <a href="{{ study.url }}" class="post-card__cta" aria-label="Read case study: {{ study.data.headline or study.data.title }}">
+                            Read case study <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{% include "footer.njk" %}
+
+<script src="/js/main.js" defer></script>
+</body>
+</html>

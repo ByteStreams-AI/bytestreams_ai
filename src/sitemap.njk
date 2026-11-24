@@ -27,4 +27,20 @@ eleventyExcludeFromCollections: true
     <priority>0.8</priority>
   </url>
 {%- endfor %}
+{%- if collections.caseStudies.length %}
+  <url>
+    <loc>{{ site.url }}/case-studies/</loc>
+    <lastmod>{{ (collections.caseStudies[0].data.updated or collections.caseStudies[0].date) | dateISO }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+{%- endif %}
+{%- for study in collections.caseStudies %}
+  <url>
+    <loc>{{ site.url }}{{ study.url }}</loc>
+    <lastmod>{{ (study.data.updated or study.date) | dateISO }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+{%- endfor %}
 </urlset>

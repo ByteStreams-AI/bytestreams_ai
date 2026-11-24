@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include "head.njk" %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ (headline or title) | replace('"', '\\"') }}",
+  "description": "{{ description | replace('"', '\\"') }}",
+  "datePublished": "{{ page.date | dateISO }}",
+  "dateModified": "{{ (updated or page.date) | dateISO }}",
+  "author": { "@type": "Organization", "name": "{{ site.name }}", "url": "{{ site.url }}" },
+  "publisher": { "@type": "Organization", "name": "{{ site.name }}", "url": "{{ site.url }}" },
+  "url": "{{ site.url }}{{ page.url }}"
+}
+</script>
+</head>
+<body data-theme="dark">
+
+{% include "header.njk" %}
+
+<main id="main">
+    <article class="blog-post case-study" aria-labelledby="studyTitle">
+        <div class="blog-post__container">
+
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol class="breadcrumb__list">
+                    <li class="breadcrumb__item"><a href="/" class="breadcrumb__link">Home</a></li>
+                    <li class="breadcrumb__item"><a href="/case-studies/" class="breadcrumb__link">Case Studies</a></li>
+                    <li class="breadcrumb__item" aria-current="page">{{ headline or title }}</li>
+                </ol>
+            </nav>
+
+            <header class="blog-post__header">
+                {% if industry %}<span class="post-tag">{{ industry }}</span>{% endif %}
+                <h1 class="blog-post__title" id="studyTitle">{{ headline or title }}</h1>
+                {% if summary %}<p class="case-study__summary">{{ summary }}</p>{% endif %}
+
+                <dl class="case-study__facts">
+                    {% if client %}<div><dt>Client</dt><dd>{{ client }}</dd></div>{% endif %}
+                    {% if services %}<div><dt>Services</dt><dd>{{ services | join(", ") }}</dd></div>{% endif %}
+                    {% if stack %}<div><dt>Stack</dt><dd>{{ stack | join(", ") }}</dd></div>{% endif %}
+                </dl>
+            </header>
+
+            {% if metrics and metrics.length %}
+            <div class="case-study__metrics" role="list" aria-label="Results">
+                {% for m in metrics %}
+                <article class="stat-card stat-card--accent" role="listitem">
+                    <p class="stat-card__number stat-card__number--compact">{{ m.value }}</p>
+                    <p class="stat-card__label">{{ m.label }}</p>
+                </article>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="blog-post__body">
+                {{ content | safe }}
+            </div>
+
+            <footer class="blog-post__footer case-study__cta">
+                <p>Have a similar problem? We scope every engagement as a fixed-fee project.</p>
+                <a href="/#contact" class="btn btn--primary">
+                    Talk to Us <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a href="/case-studies/" class="btn btn--ghost">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> All Case Studies
+                </a>
+            </footer>
+
+        </div>
+    </article>
+</main>
+
+{% include "footer.njk" %}
+
+<script src="/js/main.js" defer></script>
+</body>
+</html>

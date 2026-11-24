@@ -21,3 +21,6 @@ public/
 # Internal strategy docs (pricing, competitor notes) — repo is public
 docs/AI_Services.md
 docs/Healthcare_Consulting_Offerings_for_2027.md
+
+# Original case study with former-employer NDA figures: local only, never commit
+docs/case-study-medical-device-NDA.md

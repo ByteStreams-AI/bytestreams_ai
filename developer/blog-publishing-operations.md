@@ -236,6 +236,27 @@ In **Google Search Console**:
 
 ---
 
+## Case Studies
+
+Case studies use the same Eleventy pipeline as blog posts.
+
+- **Location:** `src/case-studies/YYYY-MM-DD-slug.md`, which publishes at
+  `/case-studies/slug/`. Copy `src/case-studies/_template.md` to start a new one.
+- **Layout:** `src/_layouts/case-study.njk`. Frontmatter supplies the
+  industry tag, client descriptor, services, stack and a `metrics` list
+  (rendered as stat cards).
+- **Drafts:** `draft: true` pages render under `npm run blog:serve` but are
+  skipped by `npm run build`, so they never deploy. Remove the flag only
+  when every number is real and the client has approved what's shown.
+- **Index:** `/case-studies/` (`src/case-studies.njk`) is built only once
+  at least one non-draft case study exists. The sitemap adds the index and
+  each published study automatically.
+- **When the first one ships:** link to `/case-studies/` from the site
+  (header nav, homepage services block, footer). Nothing links there
+  while every study is still a draft.
+
+---
+
 ## Full Command Summary
 
 ```bash
