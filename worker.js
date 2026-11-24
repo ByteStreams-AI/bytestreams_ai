@@ -30,10 +30,6 @@ async function routeRequest(request, env, url) {
     return handleSecurityTxt();
   }
 
-  if (url.pathname === '/sitemap.xml') {
-    return handleSitemap(url);
-  }
-
   if (url.pathname === '/api/contact') {
     return handleContact(request, env);
   }
@@ -129,8 +125,7 @@ function notFoundResponse() {
 
 function handleRobots(url) {
   // Build the Sitemap URL from `url.origin` so the directive is correct
-  // on any deployment (preview, staging, production) — matches the
-  // pattern in `handleSitemap` for consistency.
+  // on any deployment (preview, staging, production).
   const body = [
     'User-agent: *',
     'Allow: /',
@@ -186,51 +181,6 @@ function handleSecurityTxt() {
   return new Response(body, {
     headers: {
       'content-type': 'text/plain; charset=utf-8'
-    }
-  });
-}
-
-function handleSitemap(url) {
-  // Static pages: [path, lastmod, changefreq, priority]
-  const staticPages = [
-    ['/',               '2026-05-21', 'weekly',  '1.0'],
-    ['/blog/',          '2026-05-21', 'weekly',  '0.9'],
-    ['/tools.html',     '2026-05-26', 'monthly', '0.8'],
-    ['/privacy.html',   '2026-04-22', 'yearly',  '0.3'],
-    ['/terms.html',     '2026-04-22', 'yearly',  '0.3'],
-    ['/sms-terms.html', '2026-04-29', 'yearly',  '0.3'],
-    ['/cookies.html',   '2026-04-22', 'yearly',  '0.3'],
-  ];
-
-  // Blog posts — add each new post here when publishing
-  const blogPosts = [
-    ['/blog/why-ai-workflow-implementations-fail/', '2026-05-21', 'monthly', '0.8'],
-    ['/blog/aws-mcp-server-goes-ga/', '2026-07-07', 'monthly', '0.8'],
-    ['/blog/claude-dynamic-workflows/', '2026-07-07', 'monthly', '0.8'],
-  ];
-
-  const allPages = [...staticPages, ...blogPosts];
-
-  const urlElements = allPages.map(([path, lastmod, changefreq, priority]) => [
-    '  <url>',
-    `    <loc>${escapeXml(`${url.origin}${path}`)}</loc>`,
-    `    <lastmod>${lastmod}</lastmod>`,
-    `    <changefreq>${changefreq}</changefreq>`,
-    `    <priority>${priority}</priority>`,
-    '  </url>',
-  ].join('\n'));
-
-  const body = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...urlElements,
-    '</urlset>',
-    ''
-  ].join('\n');
-
-  return new Response(body, {
-    headers: {
-      'content-type': 'application/xml; charset=utf-8'
     }
   });
 }

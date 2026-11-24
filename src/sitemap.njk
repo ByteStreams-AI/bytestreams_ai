@@ -1,0 +1,30 @@
+---
+permalink: /sitemap.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{%- for p in sitemapPages %}
+  <url>
+    <loc>{{ site.url }}{{ p.path }}</loc>
+    <lastmod>{{ p.lastmod }}</lastmod>
+    <changefreq>{{ p.changefreq }}</changefreq>
+    <priority>{{ p.priority }}</priority>
+  </url>
+{%- endfor %}
+{%- set newest = collections.posts | first %}
+  <url>
+    <loc>{{ site.url }}/blog/</loc>
+    <lastmod>{{ (newest.data.updated or newest.date) | dateISO }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+{%- for post in collections.posts %}
+  <url>
+    <loc>{{ site.url }}{{ post.url }}</loc>
+    <lastmod>{{ (post.data.updated or post.date) | dateISO }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+{%- endfor %}
+</urlset>

@@ -61,12 +61,11 @@ binding = "ASSETS"
 not_found_handling = "404-page"
 # With `not_found_handling = "404-page"`, non-asset requests are
 # short-circuited to `/404.html` without invoking the Worker. The
-# Worker owns these dynamic paths (robots.txt, sitemap.xml, favicon
+# Worker owns these dynamic paths (robots.txt, favicon
 # fallback, security.txt, contact form), so force them to run through
 # the Worker first instead of being treated as missing assets.
 run_worker_first = [
   "/robots.txt",
-  "/sitemap.xml",
   "/favicon.ico",
   "/.well-known/*",
   "/api/*"

@@ -11,7 +11,7 @@
   "headline": "{{ title | replace('"', '\\"') }}",
   "description": "{{ description | replace('"', '\\"') }}",
   "datePublished": "{{ page.date | dateISO }}",
-  "dateModified": "{{ page.date | dateISO }}",
+  "dateModified": "{{ (updated or page.date) | dateISO }}",
   "author": {
     "@type": "Organization",
     "name": "{{ site.name }}",
