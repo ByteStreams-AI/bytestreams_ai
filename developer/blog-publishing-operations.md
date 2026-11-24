@@ -62,7 +62,7 @@ Post body starts here...
 - At least one `## H2` should include a keyword or close variant
 - Aim for 600–1500 words — enough to signal content depth to Google
 - Link to the relevant service page where it fits
-  (`/healthcare-consulting.html` or `/ai-data-services.html`)
+  (`/healthcare-consulting` or `/ai-data-services` — no `.html`)
 - End with a CTA linking to `/#contact`
 
 ---

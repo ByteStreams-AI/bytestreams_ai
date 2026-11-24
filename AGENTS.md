@@ -14,7 +14,7 @@ These rules apply to all ByteStreams landing pages and product sites. Treat them
 2. **`<meta name="description">`** — 140–160 characters. Include the primary keyword naturally. This controls the Google search snippet.
 3. **Open Graph** — `og:title`, `og:description`, `og:type`, `og:url`, `og:image` (1200×630 PNG/JPG) must all be present.
 4. **Twitter Card** — `twitter:card` = `summary_large_image`, `twitter:title`, `twitter:description`. Mirror OG values.
-5. **`<link rel="canonical">`** — Every page points to its own canonical full URL. Prevents duplicate-content penalties.
+5. **`<link rel="canonical">`** — Every page points to its own canonical full URL, **without** `.html` (e.g. `https://bytestreams.ai/tools`) — Cloudflare redirects `.html` URLs to the extensionless path, so that is the real address. Use the same form in `og:url`, JSON-LD `url`, and `src/_data/sitemapPages.js`. Prevents duplicate-content penalties.
 6. **`<meta name="keywords">`** — 6–10 long-tail comma-separated variants. Refresh when targeting new search terms.
 7. **JSON-LD structured data** — Use `SoftwareApplication`, `Organization`, or appropriate `@type`. Keep in sync with actual product details (pricing, description, contact). Validate at https://search.google.com/test/rich-results.
 
