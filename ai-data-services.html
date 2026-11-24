@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI and data services for mid-size companies: plain-English questions over your own database, MCP connectors, workflow automation and data readiness assessments.">
+    <meta name="theme-color" content="#0D1117">
+    <title>AI &amp; Data Services for Mid-Size Companies | ByteStreams</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/bytestreams-icon-256.svg">
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="dist/css/main.css">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://bytestreams.ai/ai-data-services.html">
+
+    <!-- Keywords -->
+    <meta name="keywords" content="AI data services, ask your data, text-to-SQL semantic layer, natural language database queries, MCP server development, AI workflow automation for small business, AI readiness assessment, semantic document search">
+
+    <!-- Open Graph -->
+    <meta property="og:title"       content="AI &amp; Data Services — ByteStreams">
+    <meta property="og:description" content="AI and data services for mid-size companies: plain-English questions over your own database, MCP connectors, workflow automation and data readiness assessments.">
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://bytestreams.ai/ai-data-services.html">
+    <meta property="og:image"       content="https://bytestreams.ai/assets/og-image.png">
+    <meta property="og:image:width"  content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:site"        content="@byte_streams">
+    <meta name="twitter:title"       content="AI &amp; Data Services — ByteStreams">
+    <meta name="twitter:description" content="AI and data services for mid-size companies: plain-English questions over your own database, MCP connectors, workflow automation and data readiness assessments.">
+    <meta name="twitter:image"       content="https://bytestreams.ai/assets/og-image.png">
+
+    <!-- JSON-LD: Service catalogue -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "ByteStreams",
+      "url": "https://bytestreams.ai/ai-data-services.html",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "AI & Data Services",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Ask Your Data", "description": "Plain-English questions over a company's own database, routed through a semantic layer that defines metrics, joins and business terms." } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "MCP Connectors", "description": "Model Context Protocol servers that connect company systems to AI assistants through read-only, scoped, audit-logged access." } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Workflow Automation", "description": "AI agents that take in, sort and act on work such as invoices, quotes, order entry and intake forms, with hand-off to a person." } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Data Readiness Assessment", "description": "Fixed-fee assessment of what data exists, which of it is trustworthy, and the first questions or workflows worth automating." } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Semantic Document Search", "description": "Search by meaning across contracts, SOPs, tickets and proposals, with cited sources. Offered as an add-on to a data or MCP build." } }
+        ]
+      }
+    }
+    </script>
+</head>
+<body data-theme="dark">
+
+    <!-- ============== Header ============== -->
+    <header class="header" id="siteHeader">
+        <div class="header__container">
+            <div class="header__brand">
+                <a href="index.html#home" class="header__logo" aria-label="ByteStreams &mdash; home">
+                    <img src="assets/blue-side-slim-logo.png" alt="ByteStreams" class="header__logo-mark" width="198" height="56">
+                </a>
+                <p class="header__tagline">Smarter Workflows, Stronger Results.</p>
+            </div>
+
+            <nav class="header__nav" id="primaryNav" aria-label="Primary">
+                <ul class="header__nav-list">
+                    <li><a href="index.html#home"     class="header__nav-link">Home</a></li>
+                    <li><a href="index.html#features" class="header__nav-link">Features</a></li>
+                    <li><a href="index.html#about"    class="header__nav-link">About</a></li>
+                    <li><a href="tools.html"          class="header__nav-link">Tools</a></li>
+                    <li class="header__nav-item--dropdown">
+                        <button type="button" class="header__nav-link header__nav-toggle is-active"
+                                aria-expanded="false" aria-controls="servicesMenu">
+                            Services <span class="header__nav-caret" aria-hidden="true"></span>
+                        </button>
+                        <ul class="header__submenu" id="servicesMenu">
+                            <li><a href="healthcare-consulting.html" class="header__submenu-link">Healthcare Consulting</a></li>
+                            <li><a href="ai-data-services.html" class="header__submenu-link is-active">AI &amp; Data Services</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/blog/"              class="header__nav-link">Blog</a></li>
+                    <li><a href="index.html#contact"  class="header__nav-link">Contact</a></li>
+                </ul>
+            </nav>
+
+            <div class="header__actions">
+                <a href="index.html#contact" class="btn btn--primary btn--sm">Get Started</a>
+                <button class="header__hamburger" id="hamburgerBtn"
+                        aria-label="Toggle navigation"
+                        aria-controls="primaryNav"
+                        aria-expanded="false">
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="main">
+
+        <!-- ============== Hero ============== -->
+        <section class="tools-hero" aria-labelledby="aiServicesHeroTitle">
+            <div class="tools-hero__container">
+                <p class="tools-hero__eyebrow">ByteStreams Consulting</p>
+                <h1 class="tools-hero__title" id="aiServicesHeroTitle">AI &amp; Data Services</h1>
+                <p class="tools-hero__subtitle">
+                    AI and data services for mid-size companies that want plain-English answers from their
+                    own data &mdash; built on careful data modeling, so the numbers are right.
+                </p>
+            </div>
+        </section>
+
+        <!-- ============== Services Grid ============== -->
+        <section class="section" aria-label="AI and data services">
+            <div class="section__container">
+
+                <!-- Core builds -->
+                <div class="tools-group">
+                    <h2 class="tools-group__label">AI Data Services for Mid-Size Companies</h2>
+
+                    <div class="product-grid">
+
+                        <!-- Ask your data -->
+                        <article class="product-card">
+                            <span class="product-card__status product-card__status--live">
+                                <i class="fa-solid fa-circle" style="font-size:6px;" aria-hidden="true"></i>
+                                Flagship
+                            </span>
+                            <div class="product-card__icon" style="color:#3B82F6;">
+                                <i class="fa-solid fa-database" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Ask Your Data</h3>
+                            <p class="product-card__tagline">Plain-English questions over your company database.</p>
+                            <p class="product-card__description">
+                                Letting AI write SQL against raw tables produces wrong numbers too often. We route
+                                every question through a semantic layer that defines your metrics, joins and
+                                business terms &mdash; so answers are accurate, and a question that can't be
+                                answered returns an error instead of a wrong number. Ideal for finance and
+                                operations teams with an existing database or warehouse.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="index.html#contact" class="btn btn--primary btn--sm">
+                                    Talk to Us <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </article>
+
+                        <!-- MCP connectors -->
+                        <article class="product-card">
+                            <div class="product-card__icon" style="color:#14B8A6;">
+                                <i class="fa-solid fa-plug" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">MCP Connectors</h3>
+                            <p class="product-card__tagline">Connect your business systems to AI assistants &mdash; safely.</p>
+                            <p class="product-card__description">
+                                The Model Context Protocol (MCP) is the open standard for connecting AI apps to
+                                databases and business software, replacing one-off integrations. We build MCP
+                                servers that never touch your live production database: read-only replicas,
+                                access limited to specific tables, and audit logging on every request.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="index.html#contact" class="btn btn--primary btn--sm">
+                                    Talk to Us <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </article>
+
+                        <!-- Workflow automation -->
+                        <article class="product-card">
+                            <div class="product-card__icon" style="color:#F59E0B;">
+                                <i class="fa-solid fa-diagram-project" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Workflow Automation</h3>
+                            <p class="product-card__tagline">AI agents for the work that piles up.</p>
+                            <p class="product-card__description">
+                                Agents that take in work, sort it, act on it and hand off to a person when needed
+                                &mdash; invoices, quotes, order entry and intake forms. We start with the
+                                workflows that have an obvious, measurable payoff.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="index.html#contact" class="btn btn--primary btn--sm">
+                                    Talk to Us <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </article>
+
+                    </div>
+                </div>
+
+                <!-- Start & support -->
+                <div class="tools-group">
+                    <h2 class="tools-group__label">Getting Started &amp; Ongoing Support</h2>
+
+                    <div class="product-grid">
+
+                        <!-- Data readiness assessment -->
+                        <article class="product-card">
+                            <span class="product-card__status product-card__status--soon">
+                                <i class="fa-solid fa-flag" style="font-size:8px;" aria-hidden="true"></i>
+                                Start Here
+                            </span>
+                            <div class="product-card__icon" style="color:#10B981;">
+                                <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Data Readiness Assessment</h3>
+                            <p class="product-card__tagline">Find out what your data can support before you build.</p>
+                            <p class="product-card__description">
+                                A fixed-fee, two-to-three-week assessment of what data you have, which of it is
+                                trustworthy, and the three questions or workflows worth automating first. The full
+                                fee is credited toward any build signed within 60 days.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="index.html#contact" class="btn btn--primary btn--sm">
+                                    Book an Assessment <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </article>
+
+                        <!-- Document search -->
+                        <article class="product-card">
+                            <span class="product-card__status product-card__status--soon">
+                                <i class="fa-solid fa-plus" style="font-size:8px;" aria-hidden="true"></i>
+                                Add-On
+                            </span>
+                            <div class="product-card__icon" style="color:#06B6D4;">
+                                <i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Semantic Document Search</h3>
+                            <p class="product-card__tagline">Search contracts, SOPs and tickets by meaning.</p>
+                            <p class="product-card__description">
+                                Search across contracts, SOPs, support tickets, proposals and email archives, with
+                                answers that cite their sources. Available as an add-on to an Ask Your Data or MCP
+                                build.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="index.html#contact" class="btn btn--ghost btn--sm">Talk to Us</a>
+                            </div>
+                        </article>
+
+                        <!-- Retainer -->
+                        <article class="product-card">
+                            <div class="product-card__icon" style="color:#3B82F6;">
+                                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Monthly Retainer</h3>
+                            <p class="product-card__tagline">Keep it accurate as your business changes.</p>
+                            <p class="product-card__description">
+                                Ongoing upkeep after launch: new metrics, new questions, new connectors and
+                                monitoring, so the system keeps pace with how your business actually runs.
+                            </p>
+                            <div class="product-card__actions">
+                                <a href="index.html#contact" class="btn btn--ghost btn--sm">Talk to Us</a>
+                            </div>
+                        </article>
+
+                    </div>
+                </div>
+
+                <!-- How we engage -->
+                <div class="tools-group">
+                    <h2 class="tools-group__label">How We Engage</h2>
+
+                    <div class="product-grid">
+
+                        <article class="product-card">
+                            <div class="product-card__icon" style="color:#14B8A6;">
+                                <i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Fixed Fee, Fixed Scope</h3>
+                            <p class="product-card__description">
+                                Every engagement is a fixed fee for a defined deliverable. Anything outside the
+                                written scope is quoted separately before work starts.
+                            </p>
+                        </article>
+
+                        <article class="product-card">
+                            <div class="product-card__icon" style="color:#10B981;">
+                                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Least Access by Design</h3>
+                            <p class="product-card__description">
+                                AI gets only the access a task needs: read-only replicas, scoped tables and audit
+                                logs &mdash; never your live production database.
+                            </p>
+                        </article>
+
+                        <article class="product-card">
+                            <div class="product-card__icon" style="color:#06B6D4;">
+                                <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+                            </div>
+                            <h3 class="product-card__name">Transparent Usage Costs</h3>
+                            <p class="product-card__description">
+                                AI model and cloud costs are billed at cost on their own line &mdash; never buried
+                                in the fee.
+                            </p>
+                        </article>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- ============== Footer ============== -->
+    <footer class="footer">
+        <div class="footer__container">
+            <div class="footer__grid">
+                <div class="footer__brand">
+                    <a href="index.html#home" class="footer__logo" aria-label="ByteStreams &mdash; home">
+                        <img src="assets/blue-side-slim-logo.png" alt="ByteStreams" width="198" height="56">
+                    </a>
+                    <p class="footer__tagline">
+                        Smarter Workflows, Stronger Results.
+                    </p>
+                </div>
+
+                <div class="footer__site-map" aria-label="Footer site links">
+                    <div class="footer__site-row">
+                        <p class="footer__site-label">Company</p>
+                        <ul class="footer__site-links">
+                            <li><a href="index.html#about" class="footer__link">About</a></li>
+                            <li><a href="healthcare-consulting.html" class="footer__link">Healthcare Consulting</a></li>
+                            <li><a href="ai-data-services.html" class="footer__link">AI &amp; Data Services</a></li>
+                            <li><a href="#" class="footer__link">Security</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer__site-row">
+                        <p class="footer__site-label">Product</p>
+                        <ul class="footer__site-links">
+                            <li><a href="tools.html" class="footer__link">Products &amp; Tools</a></li>
+                            <li><a href="https://dialtone.menu" class="footer__link">DialTone.menu</a></li>
+                            <li><a href="https://dialtone.med" class="footer__link">DialTone.med</a></li>
+                            <li><a href="index.html#features" class="footer__link">Features</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer__site-row">
+                        <p class="footer__site-label">Legal</p>
+                        <ul class="footer__site-links">
+                            <li><a href="privacy.html" class="footer__link">Privacy</a></li>
+                            <li><a href="terms.html" class="footer__link">Terms</a></li>
+                            <li><a href="sms-terms.html" class="footer__link">SMS Terms</a></li>
+                            <li><a href="cookies.html" class="footer__link">Cookie Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer__bottom">
+                <p class="footer__copyright">
+                    &copy; 2026 ByteStreams. Smarter Workflows, Stronger Results.
+                </p>
+                <div class="footer__social" aria-label="Social links">
+                    <a href="https://www.linkedin.com/company/bytestreams/" class="footer__social-link" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></a>
+                    <a href="https://x.com/byte_streams" class="footer__social-link" aria-label="X / Twitter"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a>
+                    <a href="https://github.com/ByteStreams-AI" class="footer__social-link" aria-label="GitHub"><i class="fa-brands fa-github" aria-hidden="true"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js?v=20261123a" defer></script>
+</body>
+</html>

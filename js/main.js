@@ -19,6 +19,15 @@
   const nav       = $('#primaryNav');
 
   if (hamburger && nav) {
+    // Mobile nav opens directly below the header, whose height varies by breakpoint
+    const header = $('#siteHeader');
+    if (header) {
+      const setHeaderHeight = () => document.documentElement.style
+        .setProperty('--header-h', `${header.offsetHeight}px`);
+      setHeaderHeight();
+      window.addEventListener('resize', setHeaderHeight);
+    }
+
     const closeNav = () => {
       hamburger.classList.remove('is-open');
       nav.classList.remove('is-open');
@@ -33,7 +42,7 @@
     });
 
     // Close nav when clicking a link
-    $$('.header__nav-link', nav).forEach(link => {
+    $$('.header__nav-link:not(.header__nav-toggle), .header__submenu-link', nav).forEach(link => {
       link.addEventListener('click', closeNav);
     });
 
@@ -53,6 +62,32 @@
       }
     });
   }
+
+  // ---------- Nav dropdowns (Services) --------------------------------
+  // Desktop opens on hover/focus via CSS; click toggles for touch screens.
+  $$('.header__nav-item--dropdown').forEach(item => {
+    const toggle = $('.header__nav-toggle', item);
+    if (!toggle) return;
+
+    const setOpen = (open) => {
+      item.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    toggle.addEventListener('click', () => setOpen(!item.classList.contains('is-open')));
+
+    document.addEventListener('click', (e) => {
+      if (!item.contains(e.target)) setOpen(false);
+    });
+
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && item.classList.contains('is-open')) {
+        e.stopPropagation();
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  });
 
   // ---------- Smooth scrolling for in-page anchors --------------------
   $$('a[href^="#"]').forEach(anchor => {

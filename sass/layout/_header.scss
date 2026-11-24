@@ -5,10 +5,19 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba($void, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid transparent;
+
+  // Blur lives on a pseudo-element: backdrop-filter on .header itself would
+  // become the containing block for the fixed mobile nav and clip it.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba($void, 0.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
   @include transition(border-color box-shadow background-color, $motion-standard);
 
   &.is-scrolled {
@@ -49,6 +58,10 @@
       display: block;
       vertical-align: middle;
       object-fit: contain;
+
+      @include mobile {
+        height: 40px;
+      }
     }
   }
 
@@ -67,7 +80,8 @@
   &__nav {
     @include below-desktop {
       position: fixed;
-      inset: 64px 0 0 0;
+      inset: var(--header-h, 72px) 0 0 0;
+      overflow-y: auto;
       background: rgba($void, 0.98);
       backdrop-filter: blur(16px);
       padding: $space-2xl $space-lg;
@@ -120,10 +134,120 @@
     }
   }
 
+  // ---------- Services dropdown -----------------------------------------
+  &__nav-item--dropdown {
+    position: relative;
+  }
+
+  &__nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__nav-caret {
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    @include transition(transform, $motion-micro);
+
+    @include below-desktop {
+      display: none;
+    }
+  }
+
+  &__submenu {
+    @include desktop {
+      position: absolute;
+      top: calc(100% + #{$space-sm});
+      left: 50%;
+      min-width: 230px;
+      padding: $space-xs;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: $radius-md;
+      box-shadow: $shadow-lg;
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(-50%, 4px);
+      @include transition(opacity transform visibility, $motion-micro);
+
+      // Hover bridge so the menu stays open while the pointer crosses the gap
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -$space-sm;
+        height: $space-sm;
+      }
+    }
+
+    @include below-desktop {
+      display: flex;
+      flex-direction: column;
+      gap: $space-sm;
+      margin-top: $space-sm;
+      padding-left: $space-md;
+      border-left: 1px solid var(--border);
+    }
+  }
+
+  &__nav-item--dropdown:hover,
+  &__nav-item--dropdown:focus-within,
+  &__nav-item--dropdown.is-open {
+    @include desktop {
+      .header__submenu {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0);
+      }
+
+      .header__nav-caret {
+        transform: translateY(1px) rotate(-135deg);
+      }
+    }
+  }
+
+  &__submenu-link {
+    display: block;
+    padding: $space-sm $space-md;
+    border-radius: $radius-sm;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    font-weight: $weight-medium;
+    white-space: nowrap;
+    @include transition(color background-color, $motion-micro);
+
+    &:hover,
+    &.is-active {
+      color: var(--text);
+      background: var(--elevated);
+    }
+
+    @include below-desktop {
+      padding: $space-xs 0;
+
+      &:hover,
+      &.is-active {
+        background: none;
+      }
+    }
+  }
+
   &__actions {
     display: flex;
     align-items: center;
     gap: $space-sm;
+
+    // Contact is in the menu; the CTA doesn't fit beside the logo on phones
+    .btn {
+      @include mobile {
+        display: none;
+      }
+    }
   }
 
   &__hamburger {

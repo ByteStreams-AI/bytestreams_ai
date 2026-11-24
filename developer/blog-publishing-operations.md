@@ -18,13 +18,19 @@
 
 ## Step 1 — Write the Blog Post
 
-Create a new Markdown file in `src/posts/`. The filename date sets the
-publish date — always include it.
+Create a new Markdown file in `src/posts/` (copy `src/posts/_template.md`
+as a starting point). The filename date sets the publish date — always
+include it.
 
 ```bash
 # File naming convention
 src/posts/YYYY-MM-DD-post-slug-here.md
+# → published at https://bytestreams.ai/blog/post-slug-here/
 ```
+
+The date prefix is stripped from the URL. Keep the slug **lowercase** —
+URLs are case-sensitive, and renaming a slug after it's indexed needs a
+redirect.
 
 ### Required frontmatter
 
@@ -48,12 +54,15 @@ Post body starts here...
 | `category` | No | Tag badge on card and post header. Defaults to `"Insights"` |
 | `keywords` | No | 6–10 comma-separated terms for `<meta keywords>` |
 | `ogImage` | No | Custom social share image URL. Falls back to site default |
+| `updated` | No | `YYYY-MM-DD` of a meaningful revision. Sets the sitemap `<lastmod>` and Article `dateModified`; defaults to the filename date |
 
 ### Writing guidelines
 
 - **First paragraph** must contain the primary keyword naturally
 - At least one `## H2` should include a keyword or close variant
 - Aim for 600–1500 words — enough to signal content depth to Google
+- Link to the relevant service page where it fits
+  (`/healthcare-consulting.html` or `/ai-data-services.html`)
 - End with a CTA linking to `/#contact`
 
 ---
@@ -97,10 +106,11 @@ npm run social -- 2026-05-21-post-slug --force
 2. `OPENAI_API_KEY` — used as fallback
 3. Neither set → error with instructions
 
-To override the model:
+Defaults (set in `scripts/social-gen.js`) are `claude-opus-4-5` and
+`gpt-4o`. To override the model:
 ```
 # In .env
-ANTHROPIC_MODEL=claude-opus-4-5
+ANTHROPIC_MODEL=claude-opus-5-5
 OPENAI_MODEL=gpt-4o
 ```
 
@@ -142,13 +152,15 @@ npm run build
 This runs three steps in sequence:
 1. `sass` — compiles `sass/main.scss` → `dist/css/main.css`
 2. `build:public` — wipes and repopulates `public/` from source files
-3. `blog:build` — Eleventy generates `public/blog/` from `src/`
+3. `blog:build` — Eleventy generates `public/blog/` and `public/sitemap.xml` from `src/`
 
 ### Verify output
 
 ```bash
 ls public/blog/
 # Should show: index.html  your-new-post/
+grep your-new-post public/sitemap.xml
+# Should show the post's <loc> — the sitemap is generated, never hand-edited
 ```
 
 ---
@@ -171,11 +183,21 @@ Check:
 
 ## Step 6 — Deploy
 
+Deploys run through GitHub Actions (`.github/workflows/deploy.yml`), which
+builds the site and runs `wrangler deploy` on every push to `main`.
+
+> **Gotcha:** the workflow ignores `**/*.md` changes, so a push that only
+> adds a post (or edits `twitter/` / `linkedin/` drafts) does **not**
+> deploy. After merging, run it manually: GitHub → Actions → **Deploy** →
+> **Run workflow**, or `gh workflow run deploy.yml --ref main`.
+
+Manual fallback from a local machine (after `npm run build`):
+
 ```bash
-wrangler deploy
+npx wrangler deploy --config wrangler.toml
 ```
 
-> Only run this when you are ready to go live. See git workflow policy —
+> Only deploy when you are ready to go live. See git workflow policy —
 > stage and review changes before deploying.
 
 ---
@@ -196,20 +218,21 @@ wrangler deploy
 
 ---
 
-## Step 8 — Update Sitemap
+## Step 8 — Request Indexing
 
-Add a `<url>` entry to `public/sitemap.xml`:
+No sitemap edits needed: `src/sitemap.njk` adds every post automatically
+on build, and `/blog/`'s `<lastmod>` follows the newest post. Confirm it's
+live at <https://bytestreams.ai/sitemap.xml>.
 
-```xml
-<url>
-  <loc>https://bytestreams.ai/blog/post-slug/</loc>
-  <lastmod>YYYY-MM-DD</lastmod>
-  <changefreq>monthly</changefreq>
-  <priority>0.8</priority>
-</url>
-```
+In **Google Search Console**:
 
-Then submit in **Google Search Console → Sitemaps**.
+1. **URL Inspection** → paste the post URL → **Request Indexing**.
+2. The sitemap only needs submitting once (**Sitemaps** → `sitemap.xml`);
+   Google re-reads it on its own.
+
+> Static (non-blog) pages are listed in `src/_data/sitemapPages.js`. Add a
+> row when you create a new page, and bump its `lastmod` when its content
+> meaningfully changes.
 
 ---
 
@@ -230,8 +253,12 @@ npm run build
 # 5. Preview
 npm run dev:worker
 
-# 6. Deploy (when ready)
-wrangler deploy
+# 6. Deploy (when ready) — merge to main, then run the workflow manually
+gh workflow run deploy.yml --ref main
+
+# 7. Post to Twitter/X and LinkedIn
+
+# 8. Search Console → URL Inspection → Request Indexing
 ```
 
 ---
@@ -247,3 +274,5 @@ wrangler deploy
 | CSS missing on blog pages | CSS path must be absolute: `/dist/css/main.css` |
 | Date shows as `Invalid Date` | Filename must start with `YYYY-MM-DD-` |
 | Eleventy build error | Run from project root; check `.eleventy.js` is present |
+| Post not in sitemap | Rebuild; check the post has the `posts` tag (via `posts.json`) and isn't in `.eleventyignore` |
+| Pushed a post but site didn't update | `.md`-only pushes skip the deploy workflow — run it manually (Step 6) |
