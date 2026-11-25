@@ -6,7 +6,7 @@
 // extensionless form is the canonical URL. Match each page's <link rel="canonical">.
 // Priority: homepage 1.0, content pages 0.8, legal 0.3. Never list 404.html.
 module.exports = [
-  { path: "/",                      lastmod: "2026-11-24", changefreq: "weekly",  priority: "1.0" },
+  { path: "/",                      lastmod: "2026-11-25", changefreq: "weekly",  priority: "1.0" },
   { path: "/tools",                 lastmod: "2026-11-23", changefreq: "monthly", priority: "0.8" },
   { path: "/healthcare-consulting", lastmod: "2026-11-23", changefreq: "monthly", priority: "0.8" },
   { path: "/ai-data-services",      lastmod: "2026-11-24", changefreq: "monthly", priority: "0.8" },

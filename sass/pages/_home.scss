@@ -109,64 +109,20 @@
     margin-top: $space-sm;
   }
 
-  &__visual {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 360px;
+  // Proof metrics sit beside the headline, above the fold
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-lg;
     @include fade-in($motion-emphasis, 0.25s);
 
-    @include below-desktop {
-      min-height: 240px;
-    }
-  }
+    @include mobile {
+      gap: $space-md;
 
-  &__mark {
-    position: relative;
-    display: block;
-    width: auto;
-    height: auto;
-    max-width: min(320px, 70%);
-    max-height: 480px;
-    object-fit: contain;
-    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.45));
-
-    @include below-desktop {
-      max-width: 240px;
-    }
-  }
-
-  // Decorative orbiting dots to reinforce "data flow" visual direction
-  &__orbit {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.55;
-
-    &::before,
-    &::after {
-      content: '';
-      position: absolute;
-      border-radius: $radius-full;
-      border: 1px solid rgba($stream-blue, 0.25);
-    }
-
-    &::before {
-      width: 420px;
-      height: 420px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    &::after {
-      width: 260px;
-      height: 260px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border-color: rgba($data-teal, 0.22);
+      .stat-card {
+        min-height: 140px;
+        padding: $space-lg;
+      }
     }
   }
 }
@@ -222,18 +178,16 @@
     max-width: 520px;
   }
 
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: $space-lg;
+  &__proof {
+    align-self: center;
 
-    @include mobile {
-      grid-template-columns: 1fr;
+    .checklist {
+      margin: 0;
     }
   }
 }
 
-// ---------- Features "Why Choose Us" (site/features.png) ---------------
+// ---------- Features "How We Build" (site/features.png) ---------------
 .features {
   background: var(--bg);
 
@@ -249,6 +203,71 @@
     @include mobile {
       grid-template-columns: 1fr;
     }
+  }
+}
+
+// ---------- "Built in Our Lab" products band ----------------------------
+// Tinted so products read as proof, separate from the consulting tracks
+.lab {
+  background: linear-gradient(
+    180deg,
+    rgba($stream-blue, 0.07) 0%,
+    rgba($stream-blue, 0.02) 100%
+  );
+  border-block: 1px solid var(--border);
+}
+
+// ---------- "How We Start" engagement steps -----------------------------
+.steps {
+  margin-top: $space-2xl;
+
+  &__title {
+    text-align: center;
+    font-size: $font-size-h3;
+    margin: 0 0 $space-lg;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $space-lg;
+
+    @include below-desktop {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__item {
+    @include surface-card;
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+  }
+
+  &__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    background: rgba($stream-blue, 0.18);
+    color: var(--text);
+    font-weight: $weight-bold;
+  }
+
+  &__name {
+    font-size: 1.125rem;
+    margin: 0;
+  }
+
+  &__description {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: $lh-body;
   }
 }
 

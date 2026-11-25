@@ -14,7 +14,7 @@
 
 **Why this framing works:**
 
-The "can't afford to get it wrong" threads the through-line across every Bytestreams engagement and product — healthcare (dialtone.med, Sterling Pharma, Stryker Medical, Sonafi), financial intelligence (AIphaWatch), and high-stakes restaurant operations (dialtone.menu). It's also consistent with a 20-year career shipping production systems for regulated industries. This is not a studio that builds consumer toys; it's a studio that builds serious systems for serious industries.
+The "can't afford to get it wrong" threads the through-line across every Bytestreams engagement and product — healthcare (dialtone.med, Sterling Pharma, Stryker Medical, Sanofi), financial intelligence (AIphaWatch), and high-stakes restaurant operations (dialtone.menu). It's also consistent with a 20-year career shipping production systems for regulated industries. This is not a studio that builds consumer toys; it's a studio that builds serious systems for serious industries.
 
 ### What Bytestreams is (and is not)
 
@@ -94,7 +94,7 @@ These replace the generic template cards currently on the site. Each card is des
 
 **Title:** Healthcare and life sciences fluency
 
-**Body:** Sterling Pharma. Stryker Medical. Sonafi clinical research. Wright Medical. Accredo Health. Bytestreams has shipped production systems inside healthcare and life sciences for years. HIPAA workflows, regulated data handling, and domain vocabulary aren't a learning curve — they're background knowledge.
+**Body:** Sterling Pharma. Stryker Medical. Sanofi clinical research. Wright Medical. Accredo Health. Bytestreams has shipped production systems inside healthcare and life sciences for years. HIPAA workflows, regulated data handling, and domain vocabulary aren't a learning curve — they're background knowledge.
 
 **Suggested icon:** Medical cross / shield
 
@@ -167,7 +167,7 @@ This section is for Steve's reference when using the copy above — the reasonin
 
 ### Why healthcare fluency (Card 3) is the key differentiator
 
-The healthcare / life sciences track record is the single most defensible thing on the Bytestreams pitch. Every competitor can claim "AI expertise." Very few can name-drop Sterling Pharma, Stryker Medical, Sonafi, Wright Medical, and Accredo Health. This matters operationally for two reasons:
+The healthcare / life sciences track record is the single most defensible thing on the Bytestreams pitch. Every competitor can claim "AI expertise." Very few can name-drop Sterling Pharma, Stryker Medical, Sanofi, Wright Medical, and Accredo Health. This matters operationally for two reasons:
 
 1. **dialtone.med credibility moat:** Bytestreams isn't a generic voice AI vendor pitching healthcare — it's an engineering studio with a 20-year healthcare data track record launching a healthcare product. This is a massive advantage that no bootstrapped voice AI competitor can replicate in the short term.
 2. **Client services differentiation:** Healthcare buyers weight domain experience heavily. Surfacing it early in the copy filters for the right buyers and deters the wrong ones.

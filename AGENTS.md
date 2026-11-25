@@ -201,3 +201,41 @@ company page on all five pages:
 ### Files Modified
 - `AGENTS.md` *(this file)*
 - `README.md`
+
+---
+
+## 2026-11-25 — `feat/homepage-positioning-polish`
+
+**Agent:** Claude Code
+
+Acted on an external homepage review. The review's honeypot finding was skipped:
+the field is already hidden off-screen by `.honeypot` in `_contact-form.scss`.
+
+### Changes Made
+- **Copy fixes** — "Sonafi" → "Sanofi" (body copy + FAQ JSON-LD, internal docs);
+  "Bytestreams" → "ByteStreams" on the homepage.
+- **Navigation** (all static pages + `src/_includes/header.njk`) — trimmed to
+  Services ▾ / Products / Case Studies / About / Blog. Removed Home, Features,
+  Contact and Customers. Contact remains in the phone menu only
+  (`.header__nav-item--mobile`) because the Get Started CTA is hidden on phones.
+- **Footer** — removed dead Security link; SupplyFlow now points to
+  `tools.html#supplyflow`; added Customer Login (`/portal.html`); "Features" link
+  renamed "How We Build".
+- **Homepage structure** (`index.html`) — stat cards moved from About into the
+  hero (replacing the duplicate logo mark); Services narrowed to the two consulting
+  tracks plus a 3-step "How We Start" block; products moved to a separate
+  "Built in Our Lab" band (`#products`); "Why Choose Us" → "How We Build".
+- **Sass** — `.hero__stats`, `.steps`, `.lab`, `.about__proof`,
+  `.product-grid--two`; removed unused `.hero__visual/__mark/__orbit` and
+  `.about__stats`.
+
+### Files Modified
+- `index.html`, `tools.html`, `404.html`, `ai-data-services.html`,
+  `healthcare-consulting.html`, `cookies.html`, `privacy.html`, `terms.html`,
+  `sms-terms.html`
+- `src/_includes/header.njk`, `src/_includes/footer.njk`
+- `src/_data/sitemapPages.js` — homepage `lastmod` → 2026-11-25
+- `sass/layout/_header.scss`, `sass/pages/_home.scss`, `sass/pages/_tools.scss`
+- `dist/css/main.css` *(generated)*
+- `docs/bytestreams-website-copy.md`, `docs/bytestreams-about-section-guidance.md`
+- `README.md`, `AGENTS.md` *(this file)*
