@@ -239,3 +239,24 @@ the field is already hidden off-screen by `.honeypot` in `_contact-form.scss`.
 - `dist/css/main.css` *(generated)*
 - `docs/bytestreams-website-copy.md`, `docs/bytestreams-about-section-guidance.md`
 - `README.md`, `AGENTS.md` *(this file)*
+
+---
+
+## 2026-11-25 — `fix/blog-posts-deploy`
+
+**Agent:** Claude Code
+
+### Changes Made
+- **Blog cleanup** — removed leftover LinkedIn drafting text ("Full post in the
+  comments", placeholder `#Hashtag1…` tags, `[SLUG]` comment link, and an
+  AI-assistant offer line) from the S3 Annotations and Claude Dynamic Workflows
+  posts. It was rendering on the live blog pages.
+- **Deploy trigger** (`.github/workflows/deploy.yml`) — replaced `paths-ignore`
+  (which skipped every `**/*.md` change, so post-only pushes never deployed) with
+  an ordered `paths` filter that still skips docs/READMEs but re-includes `src/**`.
+
+### Files Modified
+- `.github/workflows/deploy.yml`
+- `src/posts/2026-06-03-claude-dynamic-workflows.md`
+- `src/posts/2026-07-07-S3-becomes-self-described-data-lake.md`
+- `AGENTS.md` *(this file)*

@@ -12,11 +12,15 @@ name: Deploy
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'site/**'
-      - '.gitignore'
+    # Later patterns override earlier ones. Blog posts and case studies are
+    # .md files under src/, so src/** must come last to re-include them.
+    paths:
+      - '**'
+      - '!**/*.md'
+      - '!docs/**'
+      - '!site/**'
+      - '!.gitignore'
+      - 'src/**'
   workflow_dispatch:
 
 permissions:
