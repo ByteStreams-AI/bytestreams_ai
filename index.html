@@ -84,7 +84,7 @@
           "name": "What industries does ByteStreams work with?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "ByteStreams has deep production experience in healthcare, pharmaceutical research, medical devices, and large-scale data platforms. We have shipped systems for Sterling Pharma, Stryker Medical, Sonafi clinical research, Wright Medical, and Accredo Health, among others."
+            "text": "ByteStreams has deep production experience in healthcare, pharmaceutical research, medical devices, and large-scale data platforms. We have shipped systems for Sterling Pharma, Stryker Medical, Sanofi clinical research, Wright Medical, and Accredo Health, among others."
           }
         },
         {
@@ -128,10 +128,6 @@
 
             <nav class="header__nav" id="primaryNav" aria-label="Primary">
                 <ul class="header__nav-list">
-                    <li><a href="#home"     class="header__nav-link is-active">Home</a></li>
-                    <li><a href="#features" class="header__nav-link">Features</a></li>
-                    <li><a href="#about"    class="header__nav-link">About</a></li>
-                    <li><a href="tools.html" class="header__nav-link">Tools</a></li>
                     <li class="header__nav-item--dropdown">
                         <button type="button" class="header__nav-link header__nav-toggle"
                                 aria-expanded="false" aria-controls="servicesMenu">
@@ -140,12 +136,13 @@
                         <ul class="header__submenu" id="servicesMenu">
                             <li><a href="healthcare-consulting.html" class="header__submenu-link">Healthcare Consulting</a></li>
                             <li><a href="ai-data-services.html" class="header__submenu-link">AI &amp; Data Services</a></li>
-                            <li><a href="/case-studies/" class="header__submenu-link">Case Studies</a></li>
                         </ul>
                     </li>
-                    <li><a href="/blog/"    class="header__nav-link">Blog</a></li>
-                    <li><a href="#contact"  class="header__nav-link">Contact</a></li>
-                    <li><a href="/portal.html" class="header__nav-link">Customers</a></li>
+                    <li><a href="tools.html" class="header__nav-link">Products</a></li>
+                    <li><a href="/case-studies/" class="header__nav-link">Case Studies</a></li>
+                    <li><a href="#about" class="header__nav-link">About</a></li>
+                    <li><a href="/blog/" class="header__nav-link">Blog</a></li>
+                    <li class="header__nav-item--mobile"><a href="#contact" class="header__nav-link">Contact</a></li>
                 </ul>
             </nav>
 
@@ -184,10 +181,23 @@
                     </div>
                 </div>
 
-                <div class="hero__visual" aria-hidden="true">
-                    <div class="hero__orbit"></div>
-                    <img src="assets/green-stacked-logo.png" alt=""
-                         class="hero__mark" width="320" height="480">
+                <div class="hero__stats" role="list" aria-label="ByteStreams by the numbers">
+                    <article class="stat-card stat-card--accent" role="listitem">
+                        <p class="stat-card__number">25+</p>
+                        <p class="stat-card__label">Years Shipping Production Systems</p>
+                    </article>
+                    <article class="stat-card stat-card--accent" role="listitem">
+                        <p class="stat-card__number stat-card__number--compact">2.8&nbsp;PB</p>
+                        <p class="stat-card__label">Largest Production Data Lake Architected</p>
+                    </article>
+                    <article class="stat-card stat-card--dark" role="listitem">
+                        <p class="stat-card__number">9</p>
+                        <p class="stat-card__label">LLM Providers Unified in Our Open-Source Framework</p>
+                    </article>
+                    <article class="stat-card stat-card--accent" role="listitem">
+                        <p class="stat-card__number">85%</p>
+                        <p class="stat-card__label">Test Coverage on Our Shipped Products</p>
+                    </article>
                 </div>
             </div>
         </section>
@@ -198,11 +208,11 @@
                 <header class="section__header">
                     <h2 class="section__title" id="servicesTitle">AI &amp; Data Engineering Services</h2>
                     <p class="section__subtitle">
-                        Fixed-fee consulting engagements, and the software we build and run ourselves.
+                        Fixed-fee consulting engagements for healthcare organizations and growing companies.
                     </p>
                 </header>
 
-                <div class="product-grid">
+                <div class="product-grid product-grid--two">
                     <article class="product-card">
                         <div class="product-card__icon" style="color:#14B8A6;">
                             <i class="fa-solid fa-stethoscope" aria-hidden="true"></i>
@@ -239,27 +249,112 @@
                         </div>
                     </article>
 
+                </div>
+
+                <div class="steps">
+                    <h3 class="steps__title">How We Start</h3>
+                    <ol class="steps__list">
+                        <li class="steps__item">
+                            <span class="steps__number" aria-hidden="true">1</span>
+                            <h4 class="steps__name">Fixed-Fee Assessment</h4>
+                            <p class="steps__description">
+                                A defined scope and a fixed price, agreed up front. We map your data, workflows
+                                and deadlines, and name the first things worth building.
+                            </p>
+                        </li>
+                        <li class="steps__item">
+                            <span class="steps__number" aria-hidden="true">2</span>
+                            <h4 class="steps__name">Production Build</h4>
+                            <p class="steps__description">
+                                We build the system on your cloud, wired to your real data &mdash;
+                                running every day, not a demo.
+                            </p>
+                        </li>
+                        <li class="steps__item">
+                            <span class="steps__number" aria-hidden="true">3</span>
+                            <h4 class="steps__name">Full Handoff</h4>
+                            <p class="steps__description">
+                                Terraform, tests, CI/CD and documentation ship with the code, so your team
+                                owns what we built.
+                            </p>
+                        </li>
+                    </ol>
+                </div>
+
+                <p class="section__more">
+                    <a href="/case-studies/" class="btn btn--ghost">
+                        See the Results in Our Case Studies <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </p>
+            </div>
+        </section>
+
+        <!-- ============== Products (proof, not a service tier) ============== -->
+        <section class="section lab" id="products" aria-labelledby="productsTitle">
+            <div class="section__container">
+                <header class="section__header">
+                    <h2 class="section__title" id="productsTitle">Built in Our Lab</h2>
+                    <p class="section__subtitle">
+                        AI software we build and run in production ourselves &mdash; the same stack
+                        we bring to client work.
+                    </p>
+                </header>
+
+                <div class="product-grid">
                     <article class="product-card">
+                        <span class="product-card__status product-card__status--live">
+                            <i class="fa-solid fa-circle" style="font-size:6px;" aria-hidden="true"></i>
+                            Live
+                        </span>
                         <div class="product-card__icon" style="color:#10B981;">
-                            <i class="fa-solid fa-cubes" aria-hidden="true"></i>
+                            <i class="fa-solid fa-phone-volume" aria-hidden="true"></i>
                         </div>
-                        <h3 class="product-card__name">Products &amp; Tools</h3>
-                        <p class="product-card__tagline">Software we build, ship and run in production.</p>
-                        <p class="product-card__description">
-                            DialTone voice AI for medical practices and restaurants, the AuthPulse prior-auth
-                            tracker, and open-source developer tools like StratifyAI &mdash; the same stack
-                            behind our client work.
-                        </p>
+                        <h3 class="product-card__name">DialTone</h3>
+                        <p class="product-card__tagline">Voice AI for medical practices and restaurants.</p>
                         <div class="product-card__actions">
-                            <a href="tools.html" class="btn btn--ghost btn--sm">
-                                View Products <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            <a href="https://dialtone.med" class="btn btn--ghost btn--sm">DialTone.med</a>
+                            <a href="https://dialtone.menu" class="btn btn--ghost btn--sm">DialTone.menu</a>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <span class="product-card__status product-card__status--soon">
+                            <i class="fa-solid fa-clock" style="font-size:8px;" aria-hidden="true"></i>
+                            Early Access
+                        </span>
+                        <div class="product-card__icon" style="color:#14B8A6;">
+                            <i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="product-card__name">AuthPulse</h3>
+                        <p class="product-card__tagline">Prior authorization tracking &mdash; every prior auth, on the clock.</p>
+                        <div class="product-card__actions">
+                            <a href="https://dialtone.med/authpulse" class="btn btn--ghost btn--sm">
+                                Learn More <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <span class="product-card__status product-card__status--live">
+                            <i class="fa-solid fa-circle" style="font-size:6px;" aria-hidden="true"></i>
+                            Open Source
+                        </span>
+                        <div class="product-card__icon" style="color:#3B82F6;">
+                            <i class="fa-solid fa-brain" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="product-card__name">StratifyAI</h3>
+                        <p class="product-card__tagline">One Python interface for 9+ LLM providers, with RAG and MCP built in.</p>
+                        <div class="product-card__actions">
+                            <a href="https://github.com/ByteStreams-AI" class="btn btn--ghost btn--sm">
+                                GitHub <i class="fa-brands fa-github" aria-hidden="true"></i>
                             </a>
                         </div>
                     </article>
                 </div>
+
                 <p class="section__more">
-                    <a href="/case-studies/" class="btn btn--ghost">
-                        See the Results in Our Case Studies <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    <a href="tools.html" class="btn btn--ghost">
+                        See All Products &amp; Tools <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </a>
                 </p>
             </div>
@@ -269,10 +364,10 @@
         <section class="section about" id="about" aria-labelledby="aboutTitle">
             <div class="about__container">
                 <div class="about__intro">
-                    <h2 class="about__title" id="aboutTitle">About Bytestreams</h2>
+                    <h2 class="about__title" id="aboutTitle">About ByteStreams</h2>
                     <div class="about__body">
                         <p>
-                            Bytestreams is an engineering studio that builds AI-native products
+                            ByteStreams is an engineering studio that builds AI-native products
                             for industries that can't afford to get it wrong.
                         </p>
                         <p>
@@ -287,6 +382,9 @@
                             ship something maintainable, and let the code speak for itself.
                         </p>
                     </div>
+                </div>
+
+                <div class="about__proof">
                     <ul class="checklist">
                         <li class="checklist__item">
                             <span class="checklist__icon"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
@@ -306,25 +404,6 @@
                         </li>
                     </ul>
                 </div>
-
-                <div class="about__stats" role="list">
-                    <article class="stat-card stat-card--accent" role="listitem">
-                        <p class="stat-card__number">25+</p>
-                        <p class="stat-card__label">Years Shipping Production Systems</p>
-                    </article>
-                    <article class="stat-card stat-card--accent" role="listitem">
-                        <p class="stat-card__number stat-card__number--compact">2.8&nbsp;PB</p>
-                        <p class="stat-card__label">Largest Production Data Lake Architected</p>
-                    </article>
-                    <article class="stat-card stat-card--dark" role="listitem">
-                        <p class="stat-card__number">9</p>
-                        <p class="stat-card__label">LLM Providers Unified in Our Open-Source Framework</p>
-                    </article>
-                    <article class="stat-card stat-card--accent" role="listitem">
-                        <p class="stat-card__number">85%</p>
-                        <p class="stat-card__label">Test Coverage on Our Shipped Products</p>
-                    </article>
-                </div>
             </div>
         </section>
 
@@ -332,9 +411,9 @@
         <section class="section features" id="features" aria-labelledby="featuresTitle">
             <div class="section__container">
                 <header class="section__header">
-                    <h2 class="section__title" id="featuresTitle">Why Choose Us</h2>
+                    <h2 class="section__title" id="featuresTitle">How We Build</h2>
                     <p class="section__subtitle">
-                        Discover the features that make us stand out from the competition
+                        The engineering standards behind every AI and data system we ship.
                     </p>
                 </header>
 
@@ -345,7 +424,7 @@
                         </div>
                         <h3 class="feature-card__title">25+ years in the code, not the conference circuit</h3>
                         <p class="feature-card__description">
-                            Bytestreams is led by engineers who have been shipping production systems for more than 25 years &mdash; across healthcare, pharma, medical devices, and large-scale data platforms. You're not paying for someone's first AWS project. You're paying for pattern recognition earned over a career.
+                            ByteStreams is led by engineers who have been shipping production systems for more than 25 years &mdash; across healthcare, pharma, medical devices, and large-scale data platforms. You're not paying for someone's first AWS project. You're paying for pattern recognition earned over a career.
                         </p>
                     </article>
 
@@ -365,7 +444,7 @@
                         </div>
                         <h3 class="feature-card__title">Healthcare and life sciences fluency</h3>
                         <p class="feature-card__description">
-                            Sterling Pharma. Stryker Medical. Sonafi clinical research. Wright Medical. Accredo Health. Bytestreams has shipped production systems inside healthcare and life sciences for years. HIPAA workflows, regulated data handling, and domain vocabulary aren't a learning curve &mdash; they're background knowledge.
+                            Sterling Pharma. Stryker Medical. Sanofi clinical research. Wright Medical. Accredo Health. ByteStreams has shipped production systems inside healthcare and life sciences for years. HIPAA workflows, regulated data handling, and domain vocabulary aren't a learning curve &mdash; they're background knowledge.
                         </p>
                     </article>
 
@@ -503,7 +582,7 @@ US</p>
                             <li><a href="healthcare-consulting.html" class="footer__link">Healthcare Consulting</a></li>
                             <li><a href="ai-data-services.html" class="footer__link">AI &amp; Data Services</a></li>
                             <li><a href="/case-studies/" class="footer__link">Case Studies</a></li>
-                            <li><a href="#" class="footer__link">Security</a></li>
+                            <li><a href="/portal.html" class="footer__link">Customer Login</a></li>
                         </ul>
                     </div>
 
@@ -513,7 +592,7 @@ US</p>
                             <li><a href="tools.html" class="footer__link">Products &amp; Tools</a></li>
                             <li><a href="https://dialtone.menu" class="footer__link">DialTone.menu</a></li>
                             <li><a href="https://dialtone.med" class="footer__link">DialTone.med</a></li>
-                            <li><a href="#" class="footer__link">SupplyFlow (coming soon)</a></li>
+                            <li><a href="tools.html#supplyflow" class="footer__link">SupplyFlow (coming soon)</a></li>
                         </ul>
                     </div>
 

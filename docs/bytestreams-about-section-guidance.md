@@ -22,7 +22,7 @@ Three problems, not just the inflated numbers:
 "500+ Happy Clients" and "1000+ Projects Done" are what every generic agency site claims. Sophisticated buyers categorize you as "random WordPress shop." Worse, a healthcare practice manager or pharma procurement lead will do basic due diligence, find no evidence of 1000 projects, and now you're not unimpressive — you're dishonest. For a voice AI product selling into HIPAA-regulated environments, this is a deal-killer.
 
 ### 2. Even accurate, they'd be the wrong numbers
-"Team Members" and "Projects Done" are volume metrics. Volume isn't what Bytestreams sells. Depth is. A healthcare data engineer with 20 years at Stryker/Sterling/Sonafi is worth more than a 50-person generic agency — and the site should reflect that math.
+"Team Members" and "Projects Done" are volume metrics. Volume isn't what Bytestreams sells. Depth is. A healthcare data engineer with 20 years at Stryker/Sterling/Sanofi is worth more than a 50-person generic agency — and the site should reflect that math.
 
 ### 3. The copy contradicts the positioning
 "Passionate innovators dedicated to creating exceptional digital experiences" is 2014 web agency boilerplate. It says nothing about healthcare fluency, production AI systems, or 20 years of data engineering. The "Why Choose Us" cards say *"twenty years in the code, not the conference circuit"* — and this section says *"passionate innovators."* They contradict each other.
@@ -92,7 +92,7 @@ Same layout as Option A. Left column stays identical. Right column tiles become 
 
 | Position | Value | Label |
 |---|---|---|
-| Top-left | **Pharma** | Sterling Pharma, Sonafi |
+| Top-left | **Pharma** | Sterling Pharma, Sanofi |
 | Top-right | **MedDevice** | Stryker Medical, Wright Medical |
 | Bottom-left | **Healthcare** | Accredo Health |
 | Bottom-right | **Data/Cloud** | 1.2 PB AWS Data Lake |

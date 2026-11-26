@@ -11,15 +11,18 @@ automation. Built as a static single-page site using the same tech stack as the
 The site follows the [ByteStreams Brand Kit v1.0](./ByteStreams-Brand-Kit.pdf)
 and the layout in `site/*.png`:
 
-- **Hero** — "Build Your Digital Future" headline with brand-aligned description copy and primary CTA
-- **About** — Company intro + four stat cards (10+/500+/1000+/50+)
-- **Features** — "Why Choose Us" 3×2 feature grid
+- **Hero** — "Production AI & Data Engineering" headline, CTAs, and four proof stat cards (25+ / 2.8 PB / 9 / 85%)
+- **Services** — Healthcare Consulting and AI & Data Services cards, plus a 3-step "How We Start" block
+- **Built in Our Lab** — DialTone, AuthPulse and StratifyAI as engineering proof, linking to `tools.html`
+- **About** — Company intro + capability checklist
+- **Features** — "How We Build" 3×2 feature grid
 - **Contact** — Contact info + form
-- **Header** — Logo with "Smarter Workflows, Stronger Results." tagline beneath (desktop only)
+- **Header** — Logo with "Smarter Workflows, Stronger Results." tagline beneath (desktop only);
+  nav is Services (dropdown) / Products / Case Studies / About / Blog, with Contact shown only in the phone menu
 - **Footer** — Row-based site map next to brand block:
-  - Company -> About -> Security
-  - Product -> DialTone.menu -> DialTone.med (comming soon) -> Features
-  - Legal -> Privacy -> Terms -> Cookie Policy
+  - Company -> About -> Healthcare Consulting -> AI & Data Services -> Case Studies -> Customer Login
+  - Product -> Products & Tools / DialTone.menu / DialTone.med / SupplyFlow or How We Build (varies by page)
+  - Legal -> Privacy -> Terms -> SMS Terms -> Cookie Policy
   - Social icons link to LinkedIn, X / Twitter, and GitHub
 - **Legal pages** — Dedicated `privacy.html`, `terms.html`, `cookies.html`,
   and `sms-terms.html`

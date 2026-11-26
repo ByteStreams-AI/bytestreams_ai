@@ -134,6 +134,13 @@
     }
   }
 
+  // Contact only appears in the phone menu, where the Get Started CTA is hidden
+  &__nav-item--mobile {
+    @include tablet-up {
+      display: none;
+    }
+  }
+
   // ---------- Services dropdown -----------------------------------------
   &__nav-item--dropdown {
     position: relative;
@@ -242,7 +249,7 @@
     align-items: center;
     gap: $space-sm;
 
-    // Contact is in the menu; the CTA doesn't fit beside the logo on phones
+    // Contact is in the phone menu (.header__nav-item--mobile); the CTA doesn't fit beside the logo on phones
     .btn {
       @include mobile {
         display: none;
